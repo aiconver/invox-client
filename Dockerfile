@@ -1,20 +1,45 @@
-# Stage 1: Build
-FROM node:18-alpine AS builder
-
+# ---- Base Stage ----
+FROM node:24-alpine AS base
 WORKDIR /app
-COPY package.json ./
+
+# Optional: global tooling
+RUN npm install -g typescript
+
+# ---- Development Stage ----
+FROM base AS development
+
+COPY package*.json ./
 RUN npm install
+
 COPY . .
-RUN npm run build
 
-# Stage 2: Runtime
-FROM node:18-alpine
+EXPOSE 4200
+CMD ["npm", "run", "dev"]
 
-WORKDIR /app
-COPY --from=builder /app ./
+# ---- Production Dependencies Stage ----
+FROM base AS prod-deps
 
-# Only include production dependencies
-RUN npm install --omit=dev
+COPY package*.json ./
+RUN npm ci --omit=dev
 
-EXPOSE 3000
-CMD ["npm", "start"]
+# ---- Build Stage ----
+FROM prod-deps AS build
+COPY . ./
+
+ARG NODE_ENV=production
+
+# Redeclare arguments for runtime
+ARG VITE_APP_KEYCLOAK_REALM
+ARG VITE_APP_KEYCLOAK_CLIENTID
+ARG VITE_APP_KEYCLOAK_URL
+ARG VITE_APP_API_BASE_URL
+
+# Set environment variables for runtime
+ENV VITE_APP_KEYCLOAK_REALM=$VITE_APP_KEYCLOAK_REALM
+ENV VITE_APP_KEYCLOAK_CLIENTID=$VITE_APP_KEYCLOAK_CLIENTID
+ENV VITE_APP_KEYCLOAK_URL=$VITE_APP_KEYCLOAK_URL
+ENV VITE_APP_API_BASE_URL=$VITE_APP_API_BASE_URL
+
+# build the web app
+COPY ./load_env_build.sh ./
+CMD ["sh", "load_env_build.sh"]
