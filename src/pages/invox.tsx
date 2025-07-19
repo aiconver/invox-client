@@ -1,8 +1,10 @@
 import { Navbar } from "@/components/layout/navbar";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { getFormDepartments, testPing } from "@/services/invox";
+import { getFormDepartments } from "@/services/invox";
 import { DepartmentGrid } from "@/components/invox/DepartmentGrid";
+import { useNavigate } from "react-router-dom";
+import { APP_ROUTES } from "@/lib/routes";
 
 export interface DepartmentSummary {
 	name: string;
@@ -13,6 +15,7 @@ export function Invox() {
 	const { t } = useTranslation();
 	const [departments, setDepartments] = useState<DepartmentSummary[] | null>(null);
 	const [loadingDepartments, setLoadingDepartments] = useState(true);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		getFormDepartments()
@@ -22,11 +25,11 @@ export function Invox() {
 			})
 			.finally(() => setLoadingDepartments(false));
 	}, []);
-	console.log("Departments:", departments);
 
 	const handleViewForms = (department: string) => {
-		console.log("User selected department:", department);
-		// You can navigate to /invox/forms?department=XYZ here
+		const encoded = encodeURIComponent(department);
+		const path = APP_ROUTES.formsByDepartment.to.replace(":department", encoded);
+		navigate(path);
 	};
 
 	return (
@@ -43,7 +46,10 @@ export function Invox() {
 				{loadingDepartments ? (
 					<p className="text-center text-muted">Loading departments...</p>
 				) : (
-					<DepartmentGrid departments={departments ?? []} onViewForms={handleViewForms} />
+					<DepartmentGrid
+						departments={departments ?? []}
+						onViewForms={handleViewForms}
+					/>
 				)}
 			</div>
 		</main>

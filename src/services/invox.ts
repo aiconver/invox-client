@@ -11,23 +11,41 @@ export const testPing = async (): Promise<string> => {
 };
 
 export const getFormDepartments = async (): Promise<
-  { name: string; formCount: number }[]
+	{ name: string; formCount: number }[]
 > => {
-  const response = await apiClient.post("/rpc", {
-    jsonrpc: "2.0",
-    method: "formTemplate.departmentsWithTemplateCount",
-    params: {},
-    id: 1,
-  });
+	const response = await apiClient.post("/rpc", {
+		jsonrpc: "2.0",
+		method: "formTemplate.departmentsWithTemplateCount",
+		params: {},
+		id: 1,
+	});
 
-  const raw = response.data?.result;
+	const raw = response.data?.result;
 
-  if (!Array.isArray(raw)) {
-    throw new Error("Unexpected response: no result array in formTemplate.getDepartments");
-  }
+	if (!Array.isArray(raw)) {
+		throw new Error("Unexpected response: no result array in formTemplate.getDepartments");
+	}
 
-  return raw.map((item) => ({
-    name: item.department,
-    formCount: Number(item.count),
-  }));
+	return raw.map((item) => ({
+		name: item.department,
+		formCount: Number(item.count),
+	}));
+};
+
+export const getFormsByDepartment = async (department: string) => {
+	const response = await apiClient.post("/rpc", {
+		jsonrpc: "2.0",
+		method: "formTemplate.get",
+		params: { department },
+		id: 1,
+	});
+
+	const raw = response.data?.result;
+
+	if (!Array.isArray(raw)) {
+		throw new Error("Unexpected response: no result array");
+	}
+
+	// No transformation needed, just return raw as-is
+	return raw as { id: string; name: string }[];
 };

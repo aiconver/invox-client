@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Invox } from "./pages/invox.tsx";
 import { NotFound } from "./pages/not-found.tsx";
+import { FormsByDepartmentPage } from "./pages/invox/forms-by-department.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -36,6 +37,10 @@ root.render(
 									<Route
 										path={APP_ROUTES["invox"].to}
 										element={<Invox />}
+									/>
+									<Route 
+										path={APP_ROUTES["formsByDepartment"].to} 
+										element={<FormsByDepartmentPage />} 
 									/>
 								</Route>
 							</Route>
