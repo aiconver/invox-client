@@ -9,7 +9,7 @@ export function FormPage() {
 
 	const { data: form, isLoading, error } = useQuery({
 		queryKey: ["form", formId],
-		queryFn: () => getFormTemplate({ id: formId }),
+		queryFn: () => getFormTemplate( formId as string ),
 		enabled: !!formId,
 	});
 
@@ -40,9 +40,9 @@ export function FormPage() {
 					<h1 className="text-2xl font-bold">{form.name}</h1>
 				</div>
 
-				{/* Placeholder to display structure — replace with form rendering later */}
-				<pre className="text-sm bg-white rounded-lg p-4 shadow border overflow-auto">
-					{JSON.stringify(form.structure, null, 2)}
+				<pre className="text-sm bg-white rounded-lg p-4 shadow border overflow-auto whitespace-pre-wrap break-words">
+					{JSON.stringify(form, null, 2)}
+					adasasd
 				</pre>
 			</div>
 		</div>

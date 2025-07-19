@@ -16,7 +16,7 @@ export const APP_ROUTES: AppRoutes = {
 	},
 	"form": {
 		label: "navigation.invox",
-		to: "/qa/forms/:formId",
+		to: "/qa/forms/fill/:formId",
 		icon: FileText,
 		pathPattern: "^/qa/forms/[^/]+/[^/]+$",
 	},

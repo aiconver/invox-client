@@ -10,6 +10,24 @@ export const testPing = async (): Promise<string> => {
 	return response.data.result;
 };
 
+export const getFormTemplate = async ( id : string ) => {
+	const response = await apiClient.post("/rpc", {
+		jsonrpc: "2.0",
+		method: "formTemplate.get",
+		params: { id },
+		id: 1,
+	});
+
+	const form = response.data?.result;
+
+	if (!form || typeof form !== "object") {
+		throw new Error("Form not found or invalid response");
+	}
+
+	return form;
+};
+
+
 export const getFormDepartments = async (): Promise<
 	{ name: string; formCount: number }[]
 > => {
@@ -49,3 +67,4 @@ export const getFormsByDepartment = async (department: string) => {
 	// No transformation needed, just return raw as-is
 	return raw as { id: string; name: string }[];
 };
+

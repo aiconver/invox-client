@@ -14,6 +14,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Invox } from "./pages/invox.tsx";
 import { NotFound } from "./pages/not-found.tsx";
 import { FormsByDepartmentPage } from "./pages/invox/forms-by-department.tsx";
+import { FormPage } from "./pages/invox/form.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -44,7 +45,7 @@ root.render(
 									/>
 									<Route
 										path={APP_ROUTES["form"].to}
-										element={<Invox />}
+										element={<FormPage />}
 									/>
 								</Route>
 							</Route>
