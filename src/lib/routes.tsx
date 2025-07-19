@@ -9,13 +9,13 @@ export const APP_ROUTES: AppRoutes = {
 		pathPattern: "^/qa/$",
 	},
 	"formsByDepartment": {
-		label: "navigation.formsByDepartment",
+		label: "navigation.invox",
 		to: "/qa/forms/:department",
 		icon: FileText,
 		pathPattern: "^/qa/forms/[^/]+$",
 	},
 	"form": {
-		label: "navigation.form",
+		label: "navigation.invox",
 		to: "/qa/forms/:formId",
 		icon: FileText,
 		pathPattern: "^/qa/forms/[^/]+/[^/]+$",

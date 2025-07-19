@@ -13,8 +13,9 @@ export function DynamicBreadcrumb() {
 	const { t } = useTranslation();
 	const location = useLocation();
 
-	const currentPathRoute = Object.values(APP_ROUTES).find(
-		(route) => route.to === location.pathname,
+	// Match using regex pattern instead of exact .to path
+	const currentPathRoute = Object.values(APP_ROUTES).find((route) =>
+		new RegExp(route.pathPattern).test(location.pathname)
 	);
 
 	if (!currentPathRoute) {
