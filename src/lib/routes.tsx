@@ -14,4 +14,10 @@ export const APP_ROUTES: AppRoutes = {
 		icon: FileText,
 		pathPattern: "^/qa/forms/[^/]+$",
 	},
+	"form": {
+		label: "navigation.form",
+		to: "/qa/forms/:formId",
+		icon: FileText,
+		pathPattern: "^/qa/forms/[^/]+/[^/]+$",
+	},
 } as const;

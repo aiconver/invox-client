@@ -42,6 +42,10 @@ root.render(
 										path={APP_ROUTES["formsByDepartment"].to} 
 										element={<FormsByDepartmentPage />} 
 									/>
+									<Route
+										path={APP_ROUTES["form"].to}
+										element={<Invox />}
+									/>
 								</Route>
 							</Route>
 

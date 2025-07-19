@@ -8,6 +8,7 @@ export type AppRoute = {
 const routes = [
 	"invox",
 	"formsByDepartment",
+	"form",
 ] as const;
 
 type Route = (typeof routes)[number];
