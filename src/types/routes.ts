@@ -9,6 +9,8 @@ const routes = [
 	"invox",
 	"formsByDepartment",
 	"form",
+	"departments",
+	"formView",
 ] as const;
 
 type Route = (typeof routes)[number];

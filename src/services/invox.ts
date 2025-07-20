@@ -118,3 +118,28 @@ export const submitForm = async ({
   if (response.data?.error) throw new Error(response.data.error.message);
   return response.data.result;
 };
+
+
+// services/invox.ts
+export const getSubmittedForms = async (): Promise<
+	{ id: string; templateId: string; answers: Record<string, any>; createdAt: string }[]
+> => {
+	const response = await apiClient.post("/rpc", {
+		jsonrpc: "2.0",
+		method: "form.get",
+		params: {},
+		id: 1,
+	});
+	return response.data.result;
+};
+
+
+export const getSubmittedFormById = async (id: string) => {
+	const response = await apiClient.post("/rpc", {
+		jsonrpc: "2.0",
+		method: "form.get",
+		params: { id },
+		id: 1,
+	});
+	return response.data?.result;
+};
