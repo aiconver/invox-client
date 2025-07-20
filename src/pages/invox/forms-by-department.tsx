@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { APP_ROUTES } from "@/lib/routes";
+import { BackButton } from "@/components/ui/back-button";
 
 export function FormsByDepartmentPage() {
 	const { department } = useParams();
@@ -38,6 +39,7 @@ export function FormsByDepartmentPage() {
 	return (
 		<main className="flex flex-col h-full bg-muted/50">
 			<Navbar />
+			<BackButton label={`Back to Departments`} />
 			<div className="flex-1 overflow-auto p-6">
 				<h2 className="text-xl font-semibold text-center mb-2">
 					Forms in {decodedDepartment}

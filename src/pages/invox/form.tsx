@@ -4,6 +4,7 @@ import { getFormTemplate } from "@/services/invox";
 import { Navbar } from "@/components/layout/navbar";
 import { FileText } from "lucide-react";
 import { AudioRecorder } from "@/components/ui/audio-recorder";
+import { BackButton } from "@/components/ui/back-button";
 
 export function FormPage() {
 	const { formId } = useParams<{ formId: string }>();
@@ -26,6 +27,8 @@ export function FormPage() {
 	return (
 		<div className="flex flex-col h-full bg-muted/50">
 			<Navbar />
+			<BackButton label={`Back to ${form.department} forms`} />
+			
 			<div className="flex-1 overflow-auto p-6 max-w-3xl mx-auto w-full">
 				<div className="flex items-center mb-6 gap-2">
 					<FileText className="text-primary w-6 h-6" />
