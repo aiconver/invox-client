@@ -1,6 +1,8 @@
 // components/ui/editable-form-preview.tsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { submitForm } from "@/services/invox";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
 	formId: string;
@@ -9,7 +11,11 @@ interface Props {
 }
 
 export function EditableFormPreview({ formId, fields, initialValues }: Props) {
+	const navigate = useNavigate(); // <-- initialize hook
+
 	const [editableValues, setEditableValues] = useState<Record<string, string>>(initialValues);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [submitted, setSubmitted] = useState(false);
 
 	const handleChange = (idx: number, value: string) => {
 		setEditableValues((prev) => ({
@@ -19,22 +25,32 @@ export function EditableFormPreview({ formId, fields, initialValues }: Props) {
 	};
 
 	const handleSubmit = async () => {
+		setIsSubmitting(true);
+		setSubmitted(false);
+
 		try {
-			// Replace with proper RPC call
-			await fetch("/api/submit-form", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ formId, values: editableValues }),
+			const result = await submitForm({
+				templateId: formId,
+				answers: editableValues,
 			});
-			alert("✅ Form submitted successfully!");
+
+			if (result?.formId) {
+				setSubmitted(true);
+				navigate("/qa"); // <-- programmatic client-side navigation
+			} else {
+				throw new Error("Invalid response from server");
+			}
 		} catch (err) {
-			alert("❌ Failed to submit form");
+			alert("❌ Failed to submit form: " + (err as Error).message);
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
 	return (
-		<div className="space-y-2">
+		<div className="space-y-4 mt-6 text-left">
 			<h4 className="font-semibold text-sm mb-2">Review & Edit Form:</h4>
+
 			<div className="space-y-3">
 				{fields.map((field, idx) => (
 					<div key={idx}>
@@ -49,9 +65,13 @@ export function EditableFormPreview({ formId, fields, initialValues }: Props) {
 				))}
 			</div>
 
-			<Button onClick={handleSubmit} className="w-full mt-4">
-				Submit Final Form
+			<Button onClick={handleSubmit} disabled={isSubmitting} className="w-full mt-4">
+				{isSubmitting ? "Submitting..." : "Submit Final Form"}
 			</Button>
+
+			{submitted && (
+				<p className="text-green-600 text-sm font-medium mt-2">✅ Form submitted successfully!</p>
+			)}
 		</div>
 	);
 }
