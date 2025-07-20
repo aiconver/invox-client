@@ -3,30 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { getFormTemplate } from "@/services/invox";
 import { Navbar } from "@/components/layout/navbar";
 import { FileText } from "lucide-react";
+import { AudioRecorder } from "@/components/ui/audio-recorder";
 
 export function FormPage() {
-	const { formId } = useParams();
+	const { formId } = useParams<{ formId: string }>();
 
 	const { data: form, isLoading, error } = useQuery({
 		queryKey: ["form", formId],
-		queryFn: () => getFormTemplate( formId as string ),
+		queryFn: () => getFormTemplate(formId!),
 		enabled: !!formId,
 	});
 
-	if (isLoading) {
+	if (isLoading || !form) {
 		return (
 			<div className="p-4">
 				<Navbar />
-				<p className="text-center text-muted">Loading form...</p>
-			</div>
-		);
-	}
-
-	if (error || !form) {
-		return (
-			<div className="p-4">
-				<Navbar />
-				<p className="text-center text-red-500">Error loading form.</p>
+				<p className="text-center text-muted">{isLoading ? "Loading form..." : "Error loading form."}</p>
 			</div>
 		);
 	}
@@ -39,11 +31,23 @@ export function FormPage() {
 					<FileText className="text-primary w-6 h-6" />
 					<h1 className="text-2xl font-bold">{form.name}</h1>
 				</div>
+				<p className="text-muted-foreground mb-4">
+					Department: <strong>{form.department}</strong>
+				</p>
 
-				<pre className="text-sm bg-white rounded-lg p-4 shadow border overflow-auto whitespace-pre-wrap break-words">
-					{JSON.stringify(form, null, 2)}
-					adasasd
-				</pre>
+				<div className="bg-white rounded-lg p-6 shadow border space-y-2 mt-6">
+					<h2 className="text-lg font-semibold mb-2">You must speak about the following things:</h2>
+					<ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+						{form.structure.fields.map((field, idx) => (
+							<li key={idx}>
+								<span className="text-black">{field.question}</span>
+								{field.required && <span className="text-red-500 ml-1">*</span>}
+							</li>
+						))}
+					</ul>
+				</div>
+
+				<AudioRecorder formId={formId!} />
 			</div>
 		</div>
 	);

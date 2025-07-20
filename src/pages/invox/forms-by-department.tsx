@@ -36,13 +36,17 @@ export function FormsByDepartmentPage() {
 	}
 
 	return (
-		<div className="flex flex-col h-full bg-muted/50">
+		<main className="flex flex-col h-full bg-muted/50">
 			<Navbar />
-			<div className="flex-1 overflow-auto p-6 max-w-4xl mx-auto w-full">
-				<h1 className="text-2xl font-bold mb-6 text-center">
-					Forms for Department: {decodedDepartment}
-				</h1>
-				<div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+			<div className="flex-1 overflow-auto p-6">
+				<h2 className="text-xl font-semibold text-center mb-2">
+					Forms in {decodedDepartment}
+				</h2>
+				<p className="text-center text-muted-foreground mb-6">
+					Select a form to start filling it
+				</p>
+
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 					{forms?.map((form) => (
 						<div
 							key={form.id}
@@ -51,7 +55,7 @@ export function FormsByDepartmentPage() {
 							<div className="bg-muted p-3 rounded-md mb-4">
 								<FileText className="w-6 h-6 text-primary" />
 							</div>
-							<p className="text-lg font-semibold mb-2">{form.name}</p>
+							<h3 className="text-lg font-semibold mb-2">{form.name}</h3>
 							<Button
 								variant="outline"
 								className="text-sm mt-auto"
@@ -66,6 +70,6 @@ export function FormsByDepartmentPage() {
 					))}
 				</div>
 			</div>
-		</div>
+		</main>
 	);
 }
