@@ -50,7 +50,7 @@ export function FormPage() {
 					</ul>
 				</div>
 
-				<AudioRecorder formId={formId!} formStructure={form.structure} />
+				<AudioRecorder formId={formId!} formStructure={form.structure} fields={form.structure.fields} />
 			</div>
 		</div>
 	);

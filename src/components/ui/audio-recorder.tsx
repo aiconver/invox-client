@@ -14,9 +14,10 @@ interface Props {
 			required?: boolean;
 		}[];
 	};
+	fields: { question: string; type: string; required?: boolean }[];
 }
 
-export function AudioRecorder({ formId, formStructure }: Props) {
+export function AudioRecorder({ formId, formStructure, fields }: Props) {
 	const { isRecording, toggleRecording, audioBlob, audioUrl } = useAudioRecorder();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
@@ -32,7 +33,26 @@ export function AudioRecorder({ formId, formStructure }: Props) {
 		try {
 			const result = await processForm(formId, audioBlob);
 			setTranscript(result.transcript);
-			setExtractedValues(result.extracted.filledTemplate);
+
+			const filled = result.extracted.filledTemplate;
+
+			// Check if keys are semantic (not all numeric)
+			const isIndexBased = Object.keys(filled).every((key) => /^\d+$/.test(key));
+
+			let indexBasedValues: Record<number, string>;
+
+			if (isIndexBased) {
+				// Already in desired format
+				indexBasedValues = filled;
+			} else {
+				// Transform semantic-keyed values to index-based using fields
+				indexBasedValues = fields.reduce((acc, field, idx) => {
+					acc[idx] = filled[field.question] ?? "";
+					return acc;
+				}, {} as Record<number, string>);
+			}
+
+			setExtractedValues(indexBasedValues);
 			setSubmitted(true);
 		} catch (err) {
 			console.error("Audio submission error:", err);
