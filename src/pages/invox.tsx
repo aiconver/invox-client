@@ -58,20 +58,20 @@ export function Invox() {
 			name: "Exit Interview Form",
 		},
 		{
-			id: "baea1ff1-c377-47f5-a478-ddb626347666",
-			name: "Exit Interview Form",
+			id: "94faf526-2544-4a07-a734-69b4f886433e",
+			name: "Daily Operations Log",
 		},
 		{
-			id: "baea1ff1-c377-47f5-a478-ddb626347666",
-			name: "Exit Interview Form",
+			id: "7ec6b41c-5696-46b4-bde5-dfbfd82aa194",
+			name: "Equipment Maintenance Record",
 		},
 		{
-			id: "baea1ff1-c377-47f5-a478-ddb626347666",
-			name: "Exit Interview Form",
+			id: "9c437b6b-3ee3-4a86-bf5f-338ea3ae1d3f",
+			name: "Inventory Check",
 		},
 		{
-			id: "baea1ff1-c377-47f5-a478-ddb626347666",
-			name: "Exit Interview Form",
+			id: "825d3ff9-d292-4ddf-89a1-629d81793066",
+			name: "Incident Report",
 		},
 	];
 
