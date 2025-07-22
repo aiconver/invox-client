@@ -11,19 +11,32 @@ export const testPing = async (): Promise<string> => {
 	return response.data.result;
 };
 
-export const getFormTemplate = async (id: string) => {
-	const response = await apiClient.post("/rpc", {
-		jsonrpc: "2.0",
-		method: "formTemplate.get",
-		params: { id },
-		id: 1,
-	});
 
-	const form = response.data?.result;
-	if (!form || typeof form !== "object") {
-		throw new Error("Form not found or invalid response");
-	}
-	return form;
+type FormFieldDefinition = {
+  type: string;
+  required: boolean;
+};
+
+
+export const getFormTemplate = async (id: string): Promise<{
+  id: string;
+  name: string;
+  department: string;
+  processingType: string;
+  structure: Record<string, FormFieldDefinition>;
+}> => {
+  const response = await apiClient.post("/rpc", {
+    jsonrpc: "2.0",
+    method: "formTemplate.get",
+    params: { id },
+    id: 1,
+  });
+
+  const form = response.data?.result;
+  if (!form || typeof form !== "object") {
+    throw new Error("Form not found or invalid response");
+  }
+  return form;
 };
 
 export const getFormDepartments = async (): Promise<
@@ -63,7 +76,22 @@ export const getFormsByDepartment = async (department: string) => {
 	return raw as { id: string; name: string }[];
 };
 
-export const processForm = async (formTemplateId: string, audioBlob: Blob) => {
+
+export interface ProcessedFormResult {
+	transcript: string;
+	extracted: {
+		message: string;
+		filledTemplate: Record<string, any>; // semantic keys
+		confidence: number;
+		missingFields: string[];
+		warnings: string[];
+	};
+}
+
+export const processForm = async (
+	formTemplateId: string,
+	audioBlob: Blob
+): Promise<ProcessedFormResult> => {
 	const arrayBuffer = await audioBlob.arrayBuffer();
 	const uint8Array = new Uint8Array(arrayBuffer);
 	const base64Audio = btoa(String.fromCharCode(...uint8Array));
@@ -83,16 +111,7 @@ export const processForm = async (formTemplateId: string, audioBlob: Blob) => {
 		throw new Error("Invalid response from form.processForm");
 	}
 
-	return result as {
-		transcript: string;
-		extracted: {
-			message: string;
-			filledTemplate: Record<string, any>;
-			confidence: number;
-			missingFields: string[];
-			warnings: string[];
-		};
-	};
+	return result as ProcessedFormResult;
 };
 
 

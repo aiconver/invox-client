@@ -1,4 +1,3 @@
-// components/ui/editable-form-preview.tsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { submitForm } from "@/services/invox";
@@ -11,16 +10,15 @@ interface Props {
 }
 
 export function EditableFormPreview({ formId, fields, initialValues }: Props) {
-	const navigate = useNavigate(); // <-- initialize hook
-
+	const navigate = useNavigate();
 	const [editableValues, setEditableValues] = useState<Record<string, string>>(initialValues);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
 
-	const handleChange = (idx: number, value: string) => {
+	const handleChange = (fieldKey: string, value: string) => {
 		setEditableValues((prev) => ({
 			...prev,
-			[idx]: value,
+			[fieldKey]: value,
 		}));
 	};
 
@@ -36,7 +34,7 @@ export function EditableFormPreview({ formId, fields, initialValues }: Props) {
 
 			if (result?.formId) {
 				setSubmitted(true);
-				navigate("/qa"); // <-- programmatic client-side navigation
+				navigate("/qa");
 			} else {
 				throw new Error("Invalid response from server");
 			}
@@ -52,17 +50,21 @@ export function EditableFormPreview({ formId, fields, initialValues }: Props) {
 			<h4 className="font-semibold text-sm mb-2">Review & Edit Form:</h4>
 
 			<div className="space-y-3">
-				{fields.map((field, idx) => (
-					<div key={idx}>
-						<label className="text-sm text-muted-foreground mb-1 block">{field.question}</label>
-						<input
-							type="text"
-							className="w-full bg-white border px-3 py-2 rounded shadow-sm text-sm"
-							value={editableValues[idx] ?? ""}
-							onChange={(e) => handleChange(idx, e.target.value)}
-						/>
-					</div>
-				))}
+				{Array.isArray(fields) &&
+					fields.map((field) => (
+						<div key={field.question}>
+							<label className="text-sm text-muted-foreground mb-1 block">
+								{field.question}
+								{field.required && <span className="text-red-500 ml-1">*</span>}
+							</label>
+							<input
+								type="text"
+								className="w-full bg-white border px-3 py-2 rounded shadow-sm text-sm"
+								value={editableValues[field.question] ?? ""}
+								onChange={(e) => handleChange(field.question, e.target.value)}
+							/>
+						</div>
+					))}
 			</div>
 
 			<Button onClick={handleSubmit} disabled={isSubmitting} className="w-full mt-4">
@@ -70,7 +72,9 @@ export function EditableFormPreview({ formId, fields, initialValues }: Props) {
 			</Button>
 
 			{submitted && (
-				<p className="text-green-600 text-sm font-medium mt-2">✅ Form submitted successfully!</p>
+				<p className="text-green-600 text-sm font-medium mt-2">
+					✅ Form submitted successfully!
+				</p>
 			)}
 		</div>
 	);

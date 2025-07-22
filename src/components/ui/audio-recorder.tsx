@@ -7,17 +7,10 @@ import { EditableFormPreview } from "../invox/EditableFormPreview";
 
 interface Props {
 	formId: string;
-	formStructure: {
-		fields: {
-			type: string;
-			question: string;
-			required?: boolean;
-		}[];
-	};
-	fields: { question: string; type: string; required?: boolean }[];
+	formStructure: Record<string, { type: string; required?: boolean }>;
 }
 
-export function AudioRecorder({ formId, formStructure, fields }: Props) {
+export function AudioRecorder({ formId, formStructure }: Props) {
 	const { isRecording, toggleRecording, audioBlob, audioUrl } = useAudioRecorder();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
@@ -33,26 +26,7 @@ export function AudioRecorder({ formId, formStructure, fields }: Props) {
 		try {
 			const result = await processForm(formId, audioBlob);
 			setTranscript(result.transcript);
-
-			const filled = result.extracted.filledTemplate;
-
-			// Check if keys are semantic (not all numeric)
-			const isIndexBased = Object.keys(filled).every((key) => /^\d+$/.test(key));
-
-			let indexBasedValues: Record<number, string>;
-
-			if (isIndexBased) {
-				// Already in desired format
-				indexBasedValues = filled;
-			} else {
-				// Transform semantic-keyed values to index-based using fields
-				indexBasedValues = fields.reduce((acc, field, idx) => {
-					acc[idx] = filled[field.question] ?? "";
-					return acc;
-				}, {} as Record<number, string>);
-			}
-
-			setExtractedValues(indexBasedValues);
+			setExtractedValues(result.extracted.filledTemplate);
 			setSubmitted(true);
 		} catch (err) {
 			console.error("Audio submission error:", err);
@@ -62,10 +36,31 @@ export function AudioRecorder({ formId, formStructure, fields }: Props) {
 		}
 	};
 
+	// Derived field array for EditableFormPreview
+	const fields = Object.entries(formStructure).map(([question, def]) => ({
+		question,
+		type: def.type,
+		required: def.required,
+	}));
+
 	return (
 		<div className="mt-8 text-center space-y-6">
-			<Button onClick={toggleRecording} variant={isRecording ? "destructive" : "default"} className="gap-2">
-				{isRecording ? <><StopCircle className="w-4 h-4" />Stop</> : <><Mic className="w-4 h-4" />Start</>}
+			<Button
+				onClick={toggleRecording}
+				variant={isRecording ? "destructive" : "default"}
+				className="gap-2"
+			>
+				{isRecording ? (
+					<>
+						<StopCircle className="w-4 h-4" />
+						Stop
+					</>
+				) : (
+					<>
+						<Mic className="w-4 h-4" />
+						Start
+					</>
+				)}
 			</Button>
 
 			{audioUrl && (
@@ -78,7 +73,10 @@ export function AudioRecorder({ formId, formStructure, fields }: Props) {
 			{audioBlob && (
 				<Button onClick={handleSubmit} disabled={isSubmitting} className="w-full">
 					{isSubmitting ? (
-						<><Loader2 className="w-4 h-4 animate-spin mr-2" />Processing...</>
+						<>
+							<Loader2 className="w-4 h-4 animate-spin mr-2" />
+							Processing...
+						</>
 					) : (
 						"Process Form"
 					)}
@@ -99,11 +97,10 @@ export function AudioRecorder({ formId, formStructure, fields }: Props) {
 					{extractedValues && (
 						<EditableFormPreview
 							formId={formId}
-							fields={formStructure.fields}
+							fields={fields}
 							initialValues={extractedValues}
 						/>
 					)}
-
 				</div>
 			)}
 		</div>
