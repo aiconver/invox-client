@@ -62,6 +62,11 @@ export function FormsByDepartmentPage() {
 								variant="outline"
 								className="text-sm mt-auto"
 								onClick={() => {
+									if (form.processingType === "HybridFeedback") {
+										const path = APP_ROUTES.hybridform.to.replace(":formId", encodeURIComponent(form.id));
+										navigate(path);
+										return;
+									}
 									const path = APP_ROUTES.form.to.replace(":formId", encodeURIComponent(form.id));
 									navigate(path);
 								}}

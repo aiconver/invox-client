@@ -28,6 +28,12 @@ export const APP_ROUTES: AppRoutes = {
 		icon: FileText,
 		pathPattern: "^/qa/forms/fill/[^/]+/?$",
 	},
+	"hybridform": {
+		label: "navigation.invox",
+		to: "/qa/forms/hybrid/fill/:formId",
+		icon: FileText,
+		pathPattern: "^/qa/forms/hybrid/fill/[^/]+/?$",
+	},
 	"formView": {
 		label: "navigation.invox",
 		to: "/qa/forms/view/:formId",

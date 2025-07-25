@@ -9,6 +9,7 @@ const routes = [
 	"invox",
 	"formsByDepartment",
 	"form",
+	"hybridform",
 	"departments",
 	"formView",
 ] as const;

@@ -18,6 +18,7 @@ import { FormsByDepartmentPage } from "./pages/invox/forms-by-department.tsx";
 import { FormPage } from "./pages/invox/form.tsx";
 import { NotFound } from "./pages/not-found.tsx";
 import { FormViewPage } from "./pages/invox/form-view.tsx";
+import { HybridFormPage } from "./pages/invox/hybrid-form.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -41,6 +42,7 @@ root.render(
 									<Route path={APP_ROUTES["departments"].to} element={<DepartmentsPage />} /> {/* ✅ Added */}
 									<Route path={APP_ROUTES["formsByDepartment"].to} element={<FormsByDepartmentPage />} />
 									<Route path={APP_ROUTES["form"].to} element={<FormPage />} />
+									<Route path={APP_ROUTES["hybridform"].to} element={<HybridFormPage />} />
 									<Route path={APP_ROUTES["formView"].to} element={<FormViewPage />} />
 								</Route>
 							</Route>
