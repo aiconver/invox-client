@@ -12,6 +12,7 @@ const routes = [
 	"hybridform",
 	"departments",
 	"formView",
+	"formTemplateCreator",
 ] as const;
 
 type Route = (typeof routes)[number];

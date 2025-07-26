@@ -40,4 +40,10 @@ export const APP_ROUTES: AppRoutes = {
 		icon: FileText,
 		pathPattern: "^/qa/forms/view/[^/]+/?$",
 	},
+	"formTemplateCreator": {
+		label: "navigation.invox",
+		to: "/qa/form-template-creator",
+		icon: FileText,
+		pathPattern: "^/qa/form-template-creator/?$",
+	},
 } as const;

@@ -52,6 +52,10 @@ export function Invox() {
 		navigate(APP_ROUTES.departments.to);
 	};
 
+	const handleCreateTemplate = () => {
+		navigate(APP_ROUTES.formTemplateCreator.to);
+	};
+
 	const recentTemplates = [
 		{
 			id: "baea1ff1-c377-47f5-a478-ddb626347666",
@@ -82,6 +86,9 @@ export function Invox() {
 				<div className="max-w-7xl mx-auto flex items-center justify-between">
 					<Button onClick={handleStartFilling} variant="default" size="sm">
 						Start Filling Form
+					</Button>
+					<Button onClick={handleCreateTemplate} variant="default" size="sm">
+						Create Form Template
 					</Button>
 					<h2 className="text-xl font-semibold">Your Submitted Forms</h2>
 				</div>

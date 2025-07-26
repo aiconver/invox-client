@@ -162,3 +162,31 @@ export const getSubmittedFormById = async (id: string) => {
 	});
 	return response.data?.result;
 };
+
+
+export const addFormTemplate = async ({
+  name,
+  department,
+  processingType,
+  structure,
+}: {
+  name: string;
+  department: string;
+  processingType: string;
+  structure: Record<string, any>; // Structure should be an object
+}): Promise<{ message: string; templateId: string }> => {
+  const response = await apiClient.post("/rpc", {
+    jsonrpc: "2.0",
+    method: "formTemplate.create", // This is the RPC method to create a form template
+    params: {
+      name,
+      department,
+      processingType,
+      structure,
+    },
+    id: 1,
+  });
+
+  if (response.data?.error) throw new Error(response.data.error.message);
+  return response.data.result;
+};
