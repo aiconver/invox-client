@@ -18,16 +18,10 @@ export const setAuthContext = (auth: AuthContextProps) => {
 apiClient.interceptors.request.use((config) => {
 	const token = latestAuth?.user?.access_token;
 	if (token) {
-		// Set the Authorization header using .set()
-		if (config.headers && typeof config.headers.set === "function") {
-			config.headers.set("Authorization", `Bearer ${token}`);
-		} else {
-			// fallback for older Axios versions or strict environments
-			// config.headers = {
-			// 	...config.headers,
-			// 	Authorization: `Bearer ${token}`,
-			// };
-		}
+		config.headers = {
+			...(config.headers || {}),
+			Authorization: `Bearer ${token}`,
+		};
 	}
 	return config;
 });

@@ -28,6 +28,7 @@ if (!rootElement) {
 
 const queryClient = new QueryClient();
 
+
 const root = createRoot(rootElement);
 root.render(
 	<StrictMode>
@@ -36,21 +37,20 @@ root.render(
 				<BrowserRouter>
 					<AuthProvider>
 						<Toaster />
-						<Routes>
-
-							<Route element={<ProtectedRoute />}>
-								<Route element={<MainLayout />}>
-									<Route path={APP_ROUTES["invox"].to} element={<Invox />} />
-									<Route path={APP_ROUTES["departments"].to} element={<DepartmentsPage />} /> {/* ✅ Added */}
-									<Route path={APP_ROUTES["formsByDepartment"].to} element={<FormsByDepartmentPage />} />
-									<Route path={APP_ROUTES["form"].to} element={<FormPage />} />
-									<Route path={APP_ROUTES["hybridform"].to} element={<HybridFormPage />} />
-									<Route path={APP_ROUTES["formView"].to} element={<FormViewPage />} />
-									<Route path={APP_ROUTES["formTemplateCreator"].to} element={<FormTemplateCreatorPage />} />
+							<Routes>
+								<Route element={<ProtectedRoute />}>
+									<Route element={<MainLayout />}>
+										<Route path={APP_ROUTES["invox"].to} element={<Invox />} />
+										<Route path={APP_ROUTES["departments"].to} element={<DepartmentsPage />} /> {/* ✅ Added */}
+										<Route path={APP_ROUTES["formsByDepartment"].to} element={<FormsByDepartmentPage />} />
+										<Route path={APP_ROUTES["form"].to} element={<FormPage />} />
+										<Route path={APP_ROUTES["hybridform"].to} element={<HybridFormPage />} />
+										<Route path={APP_ROUTES["formView"].to} element={<FormViewPage />} />
+										<Route path={APP_ROUTES["formTemplateCreator"].to} element={<FormTemplateCreatorPage />} />
+									</Route>
 								</Route>
-							</Route>
-							<Route path="*" element={<NotFound />} />
-						</Routes>
+								<Route path="*" element={<NotFound />} />
+							</Routes>
 					</AuthProvider>
 				</BrowserRouter>
 			</TooltipProvider>
