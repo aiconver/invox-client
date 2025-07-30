@@ -1,53 +1,75 @@
-import { LayoutSkeleton } from "@/components/skeleton/layout-skeleton";
-
+import { Trans } from "react-i18next";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { hasAuthParams, useAuth } from "react-oidc-context";
+import { hasAuthParams } from "react-oidc-context";
 import { Outlet } from "react-router-dom";
 import { AuthError } from "./auth-error";
+import { useAuthRoles } from "./use-auth-roles";
+import { LayoutSkeleton } from "../skeleton/layout-skeleton";
 
-export function ProtectedRoute() {
-	// const auth = useAuth();
-	// const { t } = useTranslation();
-	// const [hasTriedSignin, setHasTriedSignin] = useState(false);
+export function ProtectedRoute({
+	requiredRoles,
+}: {
+	requiredRoles?: (
+		| "systemAdmin"
+		| "operator"
+		| "projectManager"
+		| "merchandiser"
+		| "customer"
+	)[];
+}) {
+	const { auth, roles } = useAuthRoles();
+	const [hasTriedSignin, setHasTriedSignin] = useState(false);
 
-	// useEffect(() => {
-	// 	if (
-	// 		!(
-	// 			hasAuthParams() ||
-	// 			auth.isAuthenticated ||
-	// 			auth.activeNavigator ||
-	// 			auth.isLoading ||
-	// 			hasTriedSignin
-	// 		)
-	// 	) {
-	// 		void auth.signinRedirect();
-	// 		setHasTriedSignin(true);
-	// 	}
-	// }, [auth, hasTriedSignin]);
+	useEffect(() => {
+		if (
+			!(
+				hasAuthParams() ||
+				auth.isAuthenticated ||
+				auth.activeNavigator ||
+				auth.isLoading ||
+				hasTriedSignin
+			)
+		) {
+			void auth.signinRedirect();
+			setHasTriedSignin(true);
+		}
+	}, [auth, hasTriedSignin]);
 
-	// if (auth.error) {
-	// 	return (
-	// 		<AuthError
-	// 			title={t("auth.error.signinTrouble.title")}
-	// 			description={t("auth.error.signinTrouble.description")}
-	// 		/>
-	// 	);
-	// }
+	if (auth.error) {
+		void auth.signinRedirect();
+		return (
+			<AuthError
+				title="We are having trouble signing you in"
+				description={`Please try again later. (${auth.error})`}
+			/>
+		);
+	}
 
-	// if (auth.isLoading) {
-	// 	return <LayoutSkeleton />;
-	// }
+	if (auth.isLoading) {
+		return <LayoutSkeleton />;
+	}
 
-	// if (!auth.isAuthenticated) {
-	// 	return (
-	// 		<AuthError
-	// 			title={t("auth.error.notAuthenticated.title")}
-	// 			description={t("auth.error.notAuthenticated.description")}
-	// 		/>
-	// 	);
-	// }
+	if (!auth.isAuthenticated) {
+		return (
+			<AuthError
+				title="You are not authenticated"
+				description="Please sign in to continue."
+			/>
+		);
+	}
 
+	if (
+		requiredRoles &&
+		requiredRoles.length > 0 &&
+		!requiredRoles.some((role) => roles.includes(role))
+	) {
+		return (
+			<AuthError
+				title="You are not authorized"
+				description="You do not have permission to access this resource."
+			/>
+		);
+	}
 
 	return <Outlet />;
 }

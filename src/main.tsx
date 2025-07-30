@@ -34,9 +34,10 @@ root.render(
 		<QueryClientProvider client={queryClient}>
 			<TooltipProvider>
 				<BrowserRouter>
-					{/* <AuthProvider> */}
+					<AuthProvider>
 						<Toaster />
 						<Routes>
+
 							<Route element={<ProtectedRoute />}>
 								<Route element={<MainLayout />}>
 									<Route path={APP_ROUTES["invox"].to} element={<Invox />} />
@@ -48,10 +49,9 @@ root.render(
 									<Route path={APP_ROUTES["formTemplateCreator"].to} element={<FormTemplateCreatorPage />} />
 								</Route>
 							</Route>
-
 							<Route path="*" element={<NotFound />} />
 						</Routes>
-					{/* </AuthProvider> */}
+					</AuthProvider>
 				</BrowserRouter>
 			</TooltipProvider>
 		</QueryClientProvider>

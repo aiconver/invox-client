@@ -1,20 +1,35 @@
-import { getUser } from "@/lib/auth";
+import { Trans } from "react-i18next";
 import axios from "axios";
+import type { AuthContextProps } from "react-oidc-context";
+import config from "@/config/CombinedConfig";
 
-const apiClient = axios.create();
+const apiClient = axios.create({
+	baseURL: config.apiBaseUrl,
+	maxBodyLength: 50 * 1024 * 1024, // 50MB
+  	maxContentLength: 50 * 1024 * 1024, // 50MB
+});
 
-apiClient.interceptors.request.use(
-	(config) => {
-		const user = getUser();
-		const token = user?.access_token;
-		if (token) {
-			config.headers.Authorization = `Bearer ${token}`;
+let latestAuth: AuthContextProps | null = null;
+
+export const setAuthContext = (auth: AuthContextProps) => {
+	latestAuth = auth;
+};
+
+apiClient.interceptors.request.use((config) => {
+	const token = latestAuth?.user?.access_token;
+	if (token) {
+		// Set the Authorization header using .set()
+		if (config.headers && typeof config.headers.set === "function") {
+			config.headers.set("Authorization", `Bearer ${token}`);
+		} else {
+			// fallback for older Axios versions or strict environments
+			// config.headers = {
+			// 	...config.headers,
+			// 	Authorization: `Bearer ${token}`,
+			// };
 		}
-		return config;
-	},
-	(error) => {
-		return Promise.reject(error);
-	},
-);
+	}
+	return config;
+});
 
 export { apiClient };

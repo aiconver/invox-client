@@ -26,7 +26,7 @@ import { useAuth } from "react-oidc-context";
 export function AppSidebar() {
 	const { t } = useTranslation();
 	const location = useLocation();
-	// const { user, signoutRedirect } = useAuth();
+	const { user, signoutRedirect } = useAuth();
 
 	const availableRoutes: AppRoute[] = [];
 
@@ -43,7 +43,7 @@ export function AppSidebar() {
 	return (
 		<Sidebar>
 			<SidebarHeader className="items-center">
-				<img src="/qa/logo.svg" alt="logo" className="size-10" />
+				<img src="/logo.svg" alt="logo" className="size-10" />
 			</SidebarHeader>
 			<SidebarContent>
 				<SidebarGroup>
@@ -74,20 +74,20 @@ export function AppSidebar() {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<DropdownMenu>
-							{/* <DropdownMenuTrigger asChild>
+							<DropdownMenuTrigger asChild>
 								<SidebarMenuButton>
 									<MdOutlinePerson /> {user?.profile.name}
 									<MdChevronRight className="ml-auto rotate-90" />
 								</SidebarMenuButton>
-							</DropdownMenuTrigger> */}
-							{/* <DropdownMenuContent
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
 								side="top"
 								className="w-[--radix-popper-anchor-width]"
 							>
 								<DropdownMenuItem onClick={() => void signoutRedirect()}>
 									<span>{t("common.signOut")}</span>
 								</DropdownMenuItem>
-							</DropdownMenuContent> */}
+							</DropdownMenuContent>
 						</DropdownMenu>
 					</SidebarMenuItem>
 				</SidebarMenu>

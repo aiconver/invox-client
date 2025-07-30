@@ -1,6 +1,7 @@
-import { cn } from "@/lib/utils";
+import { Trans } from "react-i18next";
 import { MessageCircleWarningIcon } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { Card } from "../ui/card";
 
 interface AuthErrorProps {
 	title: string;

@@ -17,7 +17,7 @@ export function RecentTemplatesSection({ templates }: Props) {
 	const navigate = useNavigate();
 
 	const handleStartWithTemplate = (templateId: string) => {
-		navigate(`/qa/forms/fill/${templateId}`);
+		navigate(`/forms/fill/${templateId}`);
 	};
 
 	return (
