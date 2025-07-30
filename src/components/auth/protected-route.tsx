@@ -10,11 +10,8 @@ export function ProtectedRoute({
 	requiredRoles,
 }: {
 	requiredRoles?: (
-		| "systemAdmin"
-		| "operator"
-		| "projectManager"
-		| "merchandiser"
-		| "customer"
+		| "admin"
+		| "employee"
 	)[];
 }) {
 	const { auth, roles } = useAuthRoles();

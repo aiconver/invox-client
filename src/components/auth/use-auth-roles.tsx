@@ -41,21 +41,15 @@ export const useAuthRoles = () => {
 		parseToken();
 	}, [parseToken]);
 
-	const isSystemAdmin = roles.includes("systemAdmin");
-	const isOperator = roles.includes("operator");
-	const isProjectManager = roles.includes("projectManager");
-	const isMerchandiser = roles.includes("merchandiser");
-	const isCustomer = roles.includes("customer");
+	const isAdmin = roles.includes("admin");
+	const isEmployee = roles.includes("employee");
 
 	return {
 		auth,
 		roles,
 		id,
-		isSystemAdmin,
-		isOperator,
-		isProjectManager,
-		isMerchandiser,
-		isCustomer,
+		isAdmin,
+		isEmployee,
 		isReady,
 	};
 };
