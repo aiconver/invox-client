@@ -374,7 +374,7 @@ export function HybridFormPage() {
             console.log('✅ Form submission result:', result);
 
             if (result?.formId) {
-                navigate("/qa");
+                navigate("/");
             } else {
                 throw new Error("Invalid response from server");
             }

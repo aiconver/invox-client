@@ -34,7 +34,7 @@ export function EditableFormPreview({ formId, fields, initialValues }: Props) {
 
 			if (result?.formId) {
 				setSubmitted(true);
-				navigate("/qa");
+				navigate("/");
 			} else {
 				throw new Error("Invalid response from server");
 			}
