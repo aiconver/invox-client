@@ -3,7 +3,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
-import { addFormTemplate } from "@/services/invox";
+import { addFormTemplate } from "@/services";
 
 export interface Field {
   id: string;

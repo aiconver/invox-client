@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getFormTemplate } from "@/services/invox";
+import { getFormTemplate } from "@/services";
 import { Navbar } from "@/components/layout/navbar";
 import { FileText } from "lucide-react";
 import { AudioRecorder } from "@/components/ui/audio-recorder";

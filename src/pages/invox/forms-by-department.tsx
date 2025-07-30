@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getFormsByDepartment } from "@/services/invox";
+import { getFormsByDepartment } from "@/services";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";

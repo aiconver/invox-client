@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { submitForm } from "@/services/invox";
+import { submitForm } from "@/services";
 import { useNavigate } from "react-router-dom";
 
 interface Props {

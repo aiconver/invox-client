@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useRef, useCallback, useEffect } from "react";
-import { getFormTemplate, processForm, submitForm } from "@/services/invox";
+import { getFormTemplate, processForm, submitForm } from "@/services";
 import { Navbar } from "@/components/layout/navbar";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";

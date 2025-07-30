@@ -1,7 +1,7 @@
 // src/lib/routes.ts
 
 import type { AppRoutes } from "@/types/routes";
-import { Bot, FileText } from "lucide-react";
+import { Bot, FileText, User } from "lucide-react";
 
 export const APP_ROUTES: AppRoutes = {
 	"invox": {
@@ -45,5 +45,11 @@ export const APP_ROUTES: AppRoutes = {
 		to: "/form-template-creator",
 		icon: FileText,
 		pathPattern: "^/form-template-creator/?$",
+	},
+	"users": {
+		label: "navigation.invox",
+		to: "/users",
+		icon: User,
+		pathPattern: "^/users/?$",
 	},
 } as const;

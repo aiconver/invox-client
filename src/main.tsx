@@ -20,6 +20,7 @@ import { NotFound } from "./pages/not-found.tsx";
 import { FormViewPage } from "./pages/invox/form-view.tsx";
 import { HybridFormPage } from "./pages/invox/hybrid-form.tsx";
 import { FormTemplateCreatorPage } from "./pages/invox/form-template-creator.tsx";
+import { UsersPage } from "./pages/users.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -47,6 +48,8 @@ root.render(
 										<Route path={APP_ROUTES["hybridform"].to} element={<HybridFormPage />} />
 										<Route path={APP_ROUTES["formView"].to} element={<FormViewPage />} />
 										<Route path={APP_ROUTES["formTemplateCreator"].to} element={<FormTemplateCreatorPage />} />
+										<Route path={APP_ROUTES["users"].to} element={<UsersPage />} />
+
 									</Route>
 								</Route>
 								<Route path="*" element={<NotFound />} />

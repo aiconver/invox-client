@@ -6,7 +6,7 @@ import { FileText, Rocket } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { APP_ROUTES } from "@/lib/routes";
-import { getSubmittedForms } from "@/services/invox";
+import { getSubmittedForms } from "@/services";
 import { RecentTemplatesSection } from "@/components/invox/recent-templates-section";
 import { setAuthContext } from "@/lib/axios";
 import { useAuth } from "react-oidc-context";
@@ -64,6 +64,11 @@ export function Invox() {
 		navigate(APP_ROUTES.formTemplateCreator.to);
 	};
 
+	const handleUsers = () => {
+		navigate(APP_ROUTES.users.to);
+	};
+	
+
 	const recentTemplates = [
 		{
 			id: "baea1ff1-c377-47f5-a478-ddb626347666",
@@ -97,6 +102,9 @@ export function Invox() {
 					</Button>
 					<Button onClick={handleCreateTemplate} variant="default" size="sm">
 						Create Form Template
+					</Button>
+					<Button onClick={handleUsers} variant="default" size="sm">
+						Manage Users
 					</Button>
 					<h2 className="text-xl font-semibold">Your Submitted Forms</h2>
 				</div>
