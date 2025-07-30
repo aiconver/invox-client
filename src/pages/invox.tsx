@@ -19,18 +19,11 @@ interface SubmittedForm {
 }
 
 export function Invox() {
-	const auth = useAuth(); // 👈 this is missing
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [submittedForms, setSubmittedForms] = useState<SubmittedForm[] | null>(null);
 	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		if (auth.isAuthenticated) {
-			setAuthContext(auth); // 👈 this must run
-		}
-		}, [auth.isAuthenticated]);
-
+	
 	useEffect(() => {
 		getSubmittedForms()
 			.then(setSubmittedForms)
