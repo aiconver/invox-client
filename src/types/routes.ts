@@ -14,6 +14,8 @@ const routes = [
 	"formView",
 	"formTemplateCreator",
 	"users",
+	"userNew",
+	"userEdit",
 ] as const;
 
 type Route = (typeof routes)[number];
