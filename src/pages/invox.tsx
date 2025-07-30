@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { APP_ROUTES } from "@/lib/routes";
 import { getSubmittedForms } from "@/services/invox";
 import { RecentTemplatesSection } from "@/components/invox/recent-templates-section";
-import config from "@/config/CombinedConfig";
 
 interface SubmittedForm {
 	id: string;
@@ -20,8 +19,6 @@ interface SubmittedForm {
 export function Invox() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	console.log("CombinedConfig", config)
-	console.log("meta", import.meta)
 	const [submittedForms, setSubmittedForms] = useState<SubmittedForm[] | null>(null);
 	const [loading, setLoading] = useState(true);
 
