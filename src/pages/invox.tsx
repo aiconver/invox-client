@@ -1,130 +1,22 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FileText, Rocket } from "lucide-react";
-
 import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
-import { APP_ROUTES } from "@/lib/routes";
-import { getSubmittedForms } from "@/services";
 import { RecentTemplatesSection } from "@/components/invox/recent-templates-section";
-import { setAuthContext } from "@/lib/axios";
-import { useAuth } from "react-oidc-context";
 import { DashboardActions } from "@/components/invox/DashboardActions";
-
-interface SubmittedForm {
-	id: string;
-	templateId: string;
-	createdAt: string;
-	answers: Record<string, any>;
-}
+import { SubmittedFormsSection } from "@/components/invox/SubmittedFormsSection";
 
 export function Invox() {
 	const { t } = useTranslation();
-	const navigate = useNavigate();
-	const [submittedForms, setSubmittedForms] = useState<SubmittedForm[] | null>(null);
-	const [loading, setLoading] = useState(true);
-	
-	useEffect(() => {
-		getSubmittedForms()
-			.then(setSubmittedForms)
-			.catch((err) => {
-				console.error("Failed to load submitted forms:", err);
-			})
-			.finally(() => setLoading(false));
-	}, []);
-
-	const handleView = (formId: string) => {
-		navigate(`/forms/view/${formId}`);
-	};
-
-	const handleDownload = (form: SubmittedForm) => {
-		const blob = new Blob([JSON.stringify(form.answers, null, 2)], {
-			type: "application/json",
-		});
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = `form-${form.id}.json`;
-		link.click();
-		URL.revokeObjectURL(url);
-	};
-
-	const handleStartFilling = () => {
-		navigate(APP_ROUTES.departments.to);
-	};
-
-	const handleCreateTemplate = () => {
-		navigate(APP_ROUTES.formTemplateCreator.to);
-	};
-
-	const handleUsers = () => {
-		navigate(APP_ROUTES.users.to);
-	};
 
 	return (
-		<main className="flex flex-col min-h-screen bg-muted/50">
+		<div className="min-h-screen w-full flex flex-col bg-muted/50">
 			<Navbar />
-			<div className="flex-1 px-4 sm:px-6 lg:px-12 py-6 w-full space-y-10">
-				<DashboardActions
-					onStartFilling={handleStartFilling}
-					onCreateTemplate={handleCreateTemplate}
-					onManageUsers={handleUsers}
-					/>
-
+			<main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-12 py-6 w-full space-y-10">
+				<DashboardActions />
 				<div className="max-w-7xl mx-auto">
 					<RecentTemplatesSection />
 				</div>
-
-				<div className="max-w-7xl mx-auto flex items-center justify-between">
-					<h2 className="text-xl font-semibold">Your Submitted Forms</h2>
-				</div>
-				<div className="max-w-7xl mx-auto">
-					{loading ? (
-						<p className="text-center text-muted">Loading submitted forms...</p>
-					) : submittedForms?.length ? (
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-							{submittedForms.map((form) => (
-								<div
-									key={form.id}
-									className="rounded-lg border bg-white p-6 shadow-sm flex flex-col items-start"
-								>
-									<div className="bg-muted p-3 rounded-md mb-4">
-										<FileText className="w-5 h-5 text-primary" />
-									</div>
-									<p className="text-sm text-muted-foreground mb-2">
-										Submitted on:
-										<br />
-										<span className="text-black font-medium">
-											{new Date(form.createdAt).toLocaleString()}
-										</span>
-									</p>
-									<div className="mt-auto flex gap-2">
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={() => handleView(form.id)}
-										>
-											View
-										</Button>
-										<Button
-											variant="secondary"
-											size="sm"
-											onClick={() => handleDownload(form)}
-										>
-											Download
-										</Button>
-									</div>
-								</div>
-							))}
-						</div>
-					) : (
-						<p className="text-center text-muted">
-							You haven’t submitted any forms yet.
-						</p>
-					)}
-				</div>
-			</div>
-		</main>
+				<SubmittedFormsSection />
+			</main>
+		</div>
 	);
 }

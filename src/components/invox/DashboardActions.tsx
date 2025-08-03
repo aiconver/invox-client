@@ -1,26 +1,32 @@
 import { Button } from "@/components/ui/button"
+import { APP_ROUTES } from "@/lib/routes"
 import { FileEdit, PlusCircle, Users } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
-interface DashboardActionsProps {
-  onStartFilling: () => void
-  onCreateTemplate: () => void
-  onManageUsers: () => void
-}
+export function DashboardActions() {
+  const navigate = useNavigate()
 
-export function DashboardActions({
-  onStartFilling,
-  onCreateTemplate,
-  onManageUsers,
-}: DashboardActionsProps) {
+  const handleStartFilling = () => {
+    navigate(APP_ROUTES.departments.to)
+  }
+
+  const handleCreateTemplate = () => {
+    navigate(APP_ROUTES.formTemplateCreator.to)
+  }
+
+  const handleUsers = () => {
+    navigate(APP_ROUTES.users.to)
+  }
+
   return (
-    <div className="max-w-7xl mx-auto flex justify-end gap-2">
-      <Button onClick={onStartFilling} variant="default" size="sm" icon={<FileEdit />}>
+    <div className="max-w-7xl mx-auto flex flex-wrap justify-end gap-2">
+      <Button onClick={handleStartFilling} variant="default" size="sm" icon={<FileEdit />}>
         Start Filling Form
       </Button>
-      <Button onClick={onCreateTemplate} variant="outline" size="sm" icon={<PlusCircle />}>
+      <Button onClick={handleCreateTemplate} variant="outline" size="sm" icon={<PlusCircle />}>
         Add New Template
       </Button>
-      <Button onClick={onManageUsers} variant="secondary" size="sm" icon={<Users />}>
+      <Button onClick={handleUsers} variant="secondary" size="sm" icon={<Users />}>
         Manage Users
       </Button>
     </div>
