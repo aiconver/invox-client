@@ -87,7 +87,6 @@ export function FormsByDepartmentPage() {
                       form.processingType === "HybridFeedback"
                         ? APP_ROUTES.hybridform.to.replace(":formId", encodeURIComponent(form.id))
                         : APP_ROUTES.form.to.replace(":formId", encodeURIComponent(form.id))
-
                     navigate(path)
                   }}
                 >

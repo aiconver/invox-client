@@ -98,15 +98,12 @@ export function FormTemplateEditor({ formTemplateId }: Props) {
     try {
       if (isEdit) {
         await updateFormTemplate({ id: formTemplateId!, ...payload })
-        alert("Template updated successfully!")
       } else {
         await addFormTemplate(payload)
-        alert("Template created successfully!")
       }
-      navigate("/qa/templates")
+      navigate("/")
     } catch (err) {
       console.error("Error saving template", err)
-      alert("Failed to save template.")
     }
   }
 
