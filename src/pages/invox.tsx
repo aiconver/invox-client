@@ -61,30 +61,6 @@ export function Invox() {
 	const handleUsers = () => {
 		navigate(APP_ROUTES.users.to);
 	};
-	
-
-	const recentTemplates = [
-		{
-			id: "baea1ff1-c377-47f5-a478-ddb626347666",
-			name: "Exit Interview Form",
-		},
-		{
-			id: "94faf526-2544-4a07-a734-69b4f886433e",
-			name: "Daily Operations Log",
-		},
-		{
-			id: "7ec6b41c-5696-46b4-bde5-dfbfd82aa194",
-			name: "Equipment Maintenance Record",
-		},
-		{
-			id: "9c437b6b-3ee3-4a86-bf5f-338ea3ae1d3f",
-			name: "Inventory Check",
-		},
-		{
-			id: "825d3ff9-d292-4ddf-89a1-629d81793066",
-			name: "Incident Report",
-		},
-	];
 
 	return (
 		<main className="flex flex-col min-h-screen bg-muted/50">
@@ -97,9 +73,9 @@ export function Invox() {
 					/>
 
 				<div className="max-w-7xl mx-auto">
-					<RecentTemplatesSection templates={recentTemplates} />
+					<RecentTemplatesSection />
 				</div>
-				
+
 				<div className="max-w-7xl mx-auto flex items-center justify-between">
 					<h2 className="text-xl font-semibold">Your Submitted Forms</h2>
 				</div>
