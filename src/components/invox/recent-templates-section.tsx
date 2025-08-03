@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Rocket } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { getSubmittedForms, getFormTemplate } from "@/services"
-import { Loader } from "@/components/ui/loader" 
+import { Loader } from "@/components/ui/loader"
 
 interface RecentTemplate {
   id: string
@@ -59,43 +59,48 @@ export function RecentTemplatesSection() {
   }, [])
 
   return (
-    <section className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Recently Used Templates</h2>
+    <section className="mb-10">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold tracking-tight">Recently Used Templates</h2>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader className="w-6 h-6 text-muted-foreground" />
-          <span className="ml-2 text-sm text-muted-foreground">Loading recent templates...</span>
+        <div className="flex flex-col items-center justify-center py-10">
+          <Loader className="w-6 h-6 text-muted-foreground animate-spin" />
+          <span className="mt-2 text-sm text-muted-foreground">
+            Loading recent templates...
+          </span>
         </div>
       ) : error ? (
-        <p className="text-sm text-red-500">{error}</p>
+        <div className="text-sm text-red-500">{error}</div>
       ) : templates.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground text-center">
           Start by submitting a form — your recent templates will appear here.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {templates.map((tpl) => (
             <div
               key={tpl.id}
-              className="bg-white rounded-lg border shadow-sm p-4 flex justify-between items-center"
+              className="border bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between gap-4"
             >
-              <div>
-                <p className="font-medium">{tpl.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  Template ID: {tpl.id.slice(0, 8)}...
+              <div className="space-y-1">
+                <p className="text-base font-medium text-foreground truncate">{tpl.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  ID: {tpl.id.slice(0, 8)}...
                 </p>
               </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleStartWithTemplate(tpl.id)}
-                icon={<Rocket />}
-              >
-                Start Again
-              </Button>
+              <div className="mt-auto">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleStartWithTemplate(tpl.id)}
+                  icon={<Rocket />}
+                  className="w-full"
+                >
+                  Start Again
+                </Button>
+              </div>
             </div>
           ))}
         </div>
