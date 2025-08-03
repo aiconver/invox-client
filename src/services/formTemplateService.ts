@@ -81,3 +81,25 @@ export const addFormTemplate = async ({
   if (response.data?.error) throw new Error(response.data.error.message);
   return response.data.result;
 };
+
+
+export const getAssignableUsers = async (formTemplateId: string) => {
+  const response = await apiClient.post("/rpc", {
+    jsonrpc: "2.0",
+    method: "formTemplate.getAssignableUsers",
+    params: { formTemplateId },
+    id: 1,
+  })
+  return response.data.result
+}
+
+export const assignUsers = async (formTemplateId: string, userIds: string[]) => {
+  const response = await apiClient.post("/rpc", {
+    jsonrpc: "2.0",
+    method: "formTemplate.assignUsers",
+    params: { formTemplateId, userIds },
+    id: 1,
+  })
+  if (response.data?.error) throw new Error(response.data.error.message)
+  return response.data.result
+}
