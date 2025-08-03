@@ -60,21 +60,49 @@ export const getFormsByDepartment = async (department: string) => {
   return raw as { id: string; name: string }[];
 };
 
-export const addFormTemplate = async ({
-  name,
-  department,
-  processingType,
-  structure,
-}: {
+export const addFormTemplate = async (input: {
   name: string;
   department: string;
   processingType: string;
   structure: Record<string, any>;
-}): Promise<{ message: string; templateId: string }> => {
+  domainKnowledge?: string;
+}): Promise<{ message: string; templateId: string }> => {  
   const response = await apiClient.post("/rpc", {
     jsonrpc: "2.0",
     method: "formTemplate.create",
-    params: { name, department, processingType, structure },
+    params: input,
+    id: 1,
+  });
+
+  if (response.data?.error) throw new Error(response.data.error.message);
+  return response.data.result;
+}
+
+export const updateFormTemplate = async (input: {
+  id: string;
+  name: string;
+  department: string;
+  processingType: string;
+  structure: Record<string, any>;
+  domainKnowledge?: string;
+}): Promise<{ message: string; templateId: string }> => {
+  const response = await apiClient.post("/rpc", {
+    jsonrpc: "2.0",
+    method: "formTemplate.update",
+    params: input,
+    id: 1,
+  });
+
+  if (response.data?.error) throw new Error(response.data.error.message);
+  return response.data.result;
+}
+
+
+export const deleteFormTemplate = async (id: string): Promise<{ success: boolean }> => {
+  const response = await apiClient.post("/rpc", {
+    jsonrpc: "2.0",
+    method: "formTemplate.delete",
+    params: { id },
     id: 1,
   });
 

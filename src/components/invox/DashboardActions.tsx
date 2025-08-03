@@ -11,7 +11,7 @@ export function DashboardActions() {
   }
 
   const handleCreateTemplate = () => {
-    navigate(APP_ROUTES.formTemplateCreator.to)
+    navigate(APP_ROUTES.formTemplateCreate.to)
   }
 
   const handleUsers = () => {

@@ -19,10 +19,11 @@ import { FormPage } from "./pages/invox/form.tsx";
 import { NotFound } from "./pages/not-found.tsx";
 import { FormViewPage } from "./pages/invox/form-view.tsx";
 import { HybridFormPage } from "./pages/invox/hybrid-form.tsx";
-import { FormTemplateCreatorPage } from "./pages/invox/form-template-creator.tsx";
 import { UsersPage } from "./pages/users.tsx";
 import NewUserPage from "./pages/NewUserPage.tsx";
 import EditUserPage from "./pages/EditUserPage.tsx";
+import { FormTemplateCreatorPage } from "./pages/invox/FormTemplateCreatorPage.tsx";
+import { FormTemplateEditPage } from "./pages/invox/FormTemplateEditPage.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -49,7 +50,8 @@ root.render(
 										<Route path={APP_ROUTES["form"].to} element={<FormPage />} />
 										<Route path={APP_ROUTES["hybridform"].to} element={<HybridFormPage />} />
 										<Route path={APP_ROUTES["formView"].to} element={<FormViewPage />} />
-										<Route path={APP_ROUTES["formTemplateCreator"].to} element={<FormTemplateCreatorPage />} />
+										<Route path={APP_ROUTES["formTemplateCreate"].to} element={<FormTemplateCreatorPage />} />
+										<Route path={APP_ROUTES["formTemplateEdit"].to} element={<FormTemplateEditPage />} />
 										<Route path={APP_ROUTES["users"].to} element={<UsersPage />} />
 										<Route path={APP_ROUTES["userNew"].to} element={<NewUserPage />} />
 										<Route path={APP_ROUTES["userEdit"].to} element={<EditUserPage />} />

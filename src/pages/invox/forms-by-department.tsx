@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom"
-import { useQuery } from "@tanstack/react-query"
-import { getFormsByDepartment } from "@/services"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { deleteFormTemplate, getFormsByDepartment } from "@/services"
 import { Navbar } from "@/components/layout/navbar"
 import { Button } from "@/components/ui/button"
-import { FileText, Edit, Settings, Users } from "lucide-react"
+import { FileText, Edit, Settings, Users, Trash2 } from "lucide-react"
 import { APP_ROUTES } from "@/lib/routes"
 import { BackButton } from "@/components/ui/back-button"
 import { useAuthRoles } from "@/components/auth/use-auth-roles"
@@ -15,14 +15,25 @@ export function FormsByDepartmentPage() {
   const { department } = useParams()
   const decodedDepartment = decodeURIComponent(department ?? "")
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [assignModalOpen, setAssignModalOpen] = useState(false)
-	const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
 
   const { data: forms, isLoading, error } = useQuery({
     queryKey: ["forms", decodedDepartment],
     queryFn: () => getFormsByDepartment(decodedDepartment),
     enabled: !!decodedDepartment,
   })
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteFormTemplate(id)
+      await queryClient.invalidateQueries(["forms", decodedDepartment])
+    } catch (err) {
+      console.error(err)
+      alert("Failed to delete template")
+    }
+  }
 
   if (isLoading) {
     return (
@@ -85,37 +96,49 @@ export function FormsByDepartmentPage() {
               )}
 
               {isAdmin && (
-                <div className="flex gap-2 w-full mt-auto">
+                <>
+                  <div className="flex gap-2 w-full mt-auto">
+                    <Button
+                      variant="outline"
+                      className="text-sm w-1/2"
+                      icon={<Settings className="w-4 h-4" />}
+                      onClick={() => navigate(`/form-template/edit/${form.id}`)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="text-sm w-1/2"
+                      icon={<Users className="w-4 h-4" />}
+                      onClick={() => {
+                        setSelectedTemplateId(form.id)
+                        setAssignModalOpen(true)
+                      }}
+                    >
+                      Assign
+                    </Button>
+                  </div>
                   <Button
-                    variant="outline"
-                    className="text-sm w-1/2"
-                    icon={<Settings className="w-4 h-4" />}
+                    variant="destructive"
+                    className="text-sm w-full mt-2"
+                    icon={<Trash2 className="w-4 h-4" />}
+                    onClick={() => handleDelete(form.id)}
                   >
-                    Edit
+                    Delete
                   </Button>
-                  <Button
-					variant="outline"
-					className="text-sm w-1/2"
-					icon={<Users className="w-4 h-4" />}
-					onClick={() => {
-						setSelectedTemplateId(form.id)
-						setAssignModalOpen(true)
-					}}
-					>
-					Assign
-					</Button>
-                </div>
+                </>
               )}
             </div>
           ))}
         </div>
-		{selectedTemplateId && (
-  <AssignUsersModal
-    open={assignModalOpen}
-    formTemplateId={selectedTemplateId}
-    onClose={() => setAssignModalOpen(false)}
-  />
-)}
+
+        {selectedTemplateId && (
+          <AssignUsersModal
+            open={assignModalOpen}
+            formTemplateId={selectedTemplateId}
+            onClose={() => setAssignModalOpen(false)}
+          />
+        )}
       </div>
     </main>
   )

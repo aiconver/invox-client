@@ -38,11 +38,17 @@ export const APP_ROUTES: AppRoutes = {
 		icon: FileText,
 		pathPattern: "^/forms/view/[^/]+/?$",
 	},
-	formTemplateCreator: {
-		label: "navigation.invox",
-		to: "/form-template-creator",
+	formTemplateCreate: {
+		label: "Create Template",
+		to: "/form-template/create",
 		icon: FileText,
-		pathPattern: "^/form-template-creator/?$",
+		pathPattern: "^/form-template/create/?$",
+	},
+	formTemplateEdit: {
+		label: "Edit Template",
+		to: "/form-template/edit/:formTemplateId",
+		icon: FileText,
+		pathPattern: "^/form-template/edit/[^/]+/?$",
 	},
 	users: {
 		label: "navigation.invox",
