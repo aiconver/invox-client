@@ -10,6 +10,7 @@ import { getSubmittedForms } from "@/services";
 import { RecentTemplatesSection } from "@/components/invox/recent-templates-section";
 import { setAuthContext } from "@/lib/axios";
 import { useAuth } from "react-oidc-context";
+import { DashboardActions } from "@/components/invox/DashboardActions";
 
 interface SubmittedForm {
 	id: string;
@@ -89,23 +90,19 @@ export function Invox() {
 		<main className="flex flex-col min-h-screen bg-muted/50">
 			<Navbar />
 			<div className="flex-1 px-4 sm:px-6 lg:px-12 py-6 w-full space-y-10">
-				<div className="max-w-7xl mx-auto flex items-center justify-between">
-					<Button onClick={handleStartFilling} variant="default" size="sm">
-						Start Filling Form
-					</Button>
-					<Button onClick={handleCreateTemplate} variant="default" size="sm">
-						Create Form Template
-					</Button>
-					<Button onClick={handleUsers} variant="default" size="sm">
-						Manage Users
-					</Button>
-					<h2 className="text-xl font-semibold">Your Submitted Forms</h2>
-				</div>
+				<DashboardActions
+					onStartFilling={handleStartFilling}
+					onCreateTemplate={handleCreateTemplate}
+					onManageUsers={handleUsers}
+					/>
 
 				<div className="max-w-7xl mx-auto">
 					<RecentTemplatesSection templates={recentTemplates} />
 				</div>
-
+				
+				<div className="max-w-7xl mx-auto flex items-center justify-between">
+					<h2 className="text-xl font-semibold">Your Submitted Forms</h2>
+				</div>
 				<div className="max-w-7xl mx-auto">
 					{loading ? (
 						<p className="text-center text-muted">Loading submitted forms...</p>
