@@ -1,90 +1,106 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Navbar } from "@/components/layout/navbar";
-import { getSubmittedFormById } from "@/services";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { Navbar } from "@/components/layout/navbar"
+import { getSubmittedFormById } from "@/services"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft, FileText } from "lucide-react"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 
 interface SubmittedForm {
-	id: string;
-	templateId: string;
-	createdAt: string;
-	answers: Record<string, string>;
+  id: string
+  templateId: string
+  createdAt: string
+  answers: Record<string, string>
 }
 
 export function FormViewPage() {
-	const { formId } = useParams<{ formId: string }>();
-	const [form, setForm] = useState<SubmittedForm | null>(null);
-	const [loading, setLoading] = useState(true);
-	const navigate = useNavigate();
+  const { formId } = useParams<{ formId: string }>()
+  const [form, setForm] = useState<SubmittedForm | null>(null)
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
-	useEffect(() => {
-		if (!formId) return;
-		getSubmittedFormById(formId)
-			.then(setForm)
-			.catch(() => setForm(null))
-			.finally(() => setLoading(false));
-	}, [formId]);
+  useEffect(() => {
+    if (!formId) return
+    getSubmittedFormById(formId)
+      .then(setForm)
+      .catch(() => setForm(null))
+      .finally(() => setLoading(false))
+  }, [formId])
 
-	const handleDownload = () => {
-		if (!form) return;
-		const blob = new Blob([JSON.stringify(form.answers, null, 2)], {
-			type: "application/json",
-		});
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = `form-${form.id}.json`;
-		link.click();
-		URL.revokeObjectURL(url);
-	};
+  const handleDownload = () => {
+    if (!form) return
+    const doc = new jsPDF()
+    doc.setFontSize(16)
+    doc.text(`Submitted Form`, 14, 20)
+    doc.setFontSize(12)
+    doc.text(`Form ID: ${form.id}`, 14, 30)
+    doc.text(`Submitted on: ${new Date(form.createdAt).toLocaleString()}`, 14, 38)
 
-	return (
-		<main className="flex flex-col h-full bg-muted/50">
-			<Navbar />
-			<div className="flex-1 overflow-auto p-6 max-w-3xl mx-auto w-full space-y-6">
-				<Button
-					variant="ghost"
-					className="flex items-center gap-2 text-sm"
-					onClick={() => navigate(-1)}
-				>
-					<ArrowLeft className="w-4 h-4" />
-					Back
-				</Button>
+    const entries = Object.entries(form.answers || {})
+    if (entries.length > 0) {
+      autoTable(doc, {
+        startY: 48,
+        head: [["Field", "Answer"]],
+        body: entries.map(([key, value]) => [key, value]),
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [22, 160, 133] },
+      })
+    } else {
+      doc.text("No answers available.", 14, 48)
+    }
 
-				{loading ? (
-					<p className="text-center text-muted">Loading form...</p>
-				) : !form ? (
-					<p className="text-center text-red-500">Form not found.</p>
-				) : (
-					<div className="bg-white border rounded shadow p-6 space-y-4">
-						<div className="flex items-center gap-2 mb-4">
-							<FileText className="text-primary w-5 h-5" />
-							<h2 className="text-xl font-semibold">Submitted Form</h2>
-						</div>
-						<p className="text-sm text-muted-foreground">
-							Submitted on:{" "}
-							<span className="font-medium">
-								{new Date(form.createdAt).toLocaleString()}
-							</span>
-						</p>
+    doc.save(`form-${form.id}.pdf`)
+  }
 
-						<div className="space-y-3">
-							{Object.entries(form.answers).map(([key, value]) => (
-								<div key={key}>
-									<p className="text-sm text-muted-foreground mb-1">Field {key}</p>
-									<p className="bg-muted rounded px-3 py-2 text-sm">{value}</p>
-								</div>
-							))}
-						</div>
+  return (
+    <div className="min-h-screen w-full flex flex-col bg-muted/50">
+      <Navbar />
+      <main className="flex-1 overflow-y-auto px-4 py-6 max-w-3xl mx-auto w-full space-y-6">
+        <Button
+          variant="ghost"
+          className="flex items-center gap-2 text-sm"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
 
-						<Button variant="outline" className="w-full mt-6" onClick={handleDownload}>
-							Download JSON
-						</Button>
-					</div>
-				)}
-			</div>
-		</main>
-	);
+        {loading ? (
+          <p className="text-center text-muted-foreground">Loading form...</p>
+        ) : !form ? (
+          <p className="text-center text-red-500">Form not found.</p>
+        ) : (
+          <div className="bg-white border rounded-xl shadow p-6 space-y-6">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="text-primary w-5 h-5" />
+              <h2 className="text-xl font-semibold">Submitted Form</h2>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Submitted on:{" "}
+              <span className="font-medium">
+                {new Date(form.createdAt).toLocaleString()}
+              </span>
+            </p>
+
+            <div className="space-y-4">
+              {Object.entries(form.answers).map(([key, value]) => (
+                <div key={key}>
+                  <p className="text-sm text-muted-foreground mb-1">{key}</p>
+                  <div className="bg-muted rounded px-3 py-2 text-sm text-foreground">
+                    {value || <em className="text-muted-foreground">No answer provided</em>}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Button variant="secondary" className="w-full mt-4" onClick={handleDownload}>
+              Download PDF
+            </Button>
+          </div>
+        )}
+      </main>
+    </div>
+  )
 }
