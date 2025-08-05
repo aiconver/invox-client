@@ -16,7 +16,11 @@ export const processForm = async (
   audioBlob: Blob
 ): Promise<ProcessedFormResult> => {
   const arrayBuffer = await audioBlob.arrayBuffer();
-  const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+  const mimeType = audioBlob.type || "audio/wav";
+
+  const base64Audio = `data:${mimeType};base64,${btoa(
+    String.fromCharCode(...new Uint8Array(arrayBuffer))
+  )}`;
 
   const response = await apiClient.post("/rpc", {
     jsonrpc: "2.0",
@@ -32,3 +36,4 @@ export const processForm = async (
 
   return result as ProcessedFormResult;
 };
+
