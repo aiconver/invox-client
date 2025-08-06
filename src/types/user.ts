@@ -4,5 +4,5 @@ export type UserFormInput = {
   email: string;
   firstName: string;
   lastName: string;
-  role: "operator" | "merchandiser";
+  role: "admin" | "employee";
 };

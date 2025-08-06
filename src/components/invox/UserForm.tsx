@@ -17,7 +17,7 @@ export function UserForm({ initialData, onSubmit, isEdit }: UserFormProps) {
     email: "",
     firstName: "",
     lastName: "",
-    role: "operator",
+    role:  "admin",
     ...(initialData ?? {}),
   });
 
@@ -83,8 +83,8 @@ export function UserForm({ initialData, onSubmit, isEdit }: UserFormProps) {
           value={formData.role}
           onChange={handleChange("role")}
         >
-          <option value="operator">Operator</option>
-          <option value="merchandiser">Merchandiser</option>
+          <option value="admin">Admin</option>
+          <option value="employee">Employee</option>
         </select>
       </div>
       <Button type="submit" disabled={isSubmitting} className="w-full">

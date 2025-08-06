@@ -41,8 +41,8 @@ export const useAuthRoles = () => {
 		parseToken();
 	}, [parseToken]);
 
-	const isAdmin = roles.includes("operator");
-	const isEmployee = roles.includes("merchandiser");
+	const isAdmin = roles.includes( "admin");
+	const isEmployee = roles.includes("employee");
 
 	return {
 		auth,
