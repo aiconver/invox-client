@@ -17,7 +17,7 @@ COPY ./ ./
 
 #ENV PATH /app/node_modules/.bin:$PATH
 
-EXPOSE 3001
+EXPOSE 4201
 
 CMD ["npm", "run", "dev:host"]
 
