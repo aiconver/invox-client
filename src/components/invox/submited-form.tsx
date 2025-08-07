@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSubmittedForms, updateFormStatus } from "@/services";
-import { Button } from "@/components/ui/button";
+import DataTable from "@/components/ui/data-table"; // adjust import path
 
 const FormStatusEnums = {
   Submitted: "submitted",
@@ -51,79 +51,80 @@ export function SubmittedForms() {
     fetchForms();
   }, []);
 
-  const handleStatusChange = (formId: string, status: "approved" | "rejected") => async () => {
+  const handleStatusChange = async (formId: string, status: "approved" | "rejected") => {
     try {
       const result = await updateFormStatus({ formId, status });
       console.log("✅", result.message);
-      // Refresh list
       setForms((prev) =>
-        prev.map((f) => (f.id === formId ? { ...f, status } : f))
+        prev.map((form) => (form.id === formId ? { ...form, status } : form))
       );
     } catch (error) {
       console.error("❌ Failed to update status", error);
     }
   };
 
+  const columns = [
+    {
+      header: "Template",
+      accessor: (form: Form) => form.template?.name,
+      sortable: true,
+    },
+    {
+      header: "Department",
+      accessor: (form: Form) => form.template?.department,
+      sortable: true,
+    },
+    {
+      header: "Submitted By",
+      accessor: (form: Form) =>
+        `${form.creator?.firstName} ${form.creator?.lastName} (${form.creator?.email})`,
+      sortable: true,
+      searchAccessor: (form: Form) =>
+        `${form.creator?.firstName} ${form.creator?.lastName} ${form.creator?.email}`,
+    },
+    {
+      header: "Status",
+      accessor: "status",
+      sortable: true,
+      cell: (form: Form) => <span className="capitalize">{form.status}</span>,
+    },
+    {
+      header: "Actions",
+      accessor: () => "",
+      cell: (form: Form) =>
+        form.status === FormStatusEnums.Submitted ? (
+          <div className="flex gap-2">
+            <button
+              className="text-green-600 hover:underline"
+              onClick={() => handleStatusChange(form.id, "approved")}
+            >
+              Approve
+            </button>
+            <button
+              className="text-red-600 hover:underline"
+              onClick={() => handleStatusChange(form.id, "rejected")}
+            >
+              Reject
+            </button>
+          </div>
+        ) : (
+          <span className="text-gray-400 italic">No actions</span>
+        ),
+    },
+  ];
+
   if (loading) return <p>Loading submitted forms...</p>;
 
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">Submitted Forms</h2>
-      <div className="overflow-x-auto rounded-md shadow border border-gray-200">
-        <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 border-b">
-            <tr>
-              <th className="px-4 py-2 font-medium">Template</th>
-              <th className="px-4 py-2 font-medium">Department</th>
-              <th className="px-4 py-2 font-medium">Submitted By</th>
-              <th className="px-4 py-2 font-medium">Status</th>
-              <th className="px-4 py-2 font-medium text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {forms.map((form) => (
-              <tr key={form.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3">{form.template?.name}</td>
-                <td className="px-4 py-3">{form.template?.department}</td>
-                <td className="px-4 py-3">
-                  {form.creator?.firstName} {form.creator?.lastName} <br />
-                  <span className="text-xs text-gray-500">{form.creator?.email}</span>
-                </td>
-                <td className="px-4 py-3 capitalize">{form.status}</td>
-                <td className="px-4 py-3 text-center">
-                  {form.status === FormStatusEnums.Submitted ? (
-                    <div className="flex justify-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="success"
-                        onClick={handleStatusChange(form.id, FormStatusEnums.Approved)}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={handleStatusChange(form.id, FormStatusEnums.Rejected)}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-400 italic">No actions</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {forms.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-center text-gray-500 py-4">
-                  No submitted forms found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        data={forms}
+        columns={columns}
+        searchKeys={["status"]} // optional, adjust as needed
+        itemsPerPage={10}
+        emptyMessage="No submitted forms found"
+      />
     </div>
   );
 }
