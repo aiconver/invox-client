@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getSubmittedForms, updateFormStatus } from "@/services";
-import DataTable from "@/components/ui/data-table"; // adjust import path
+import DataTable from "@/components/ui/data-table";
+
+import { Check, X, Eye } from "lucide-react"; // ✅ Icons
 
 const FormStatusEnums = {
   Submitted: "submitted",
@@ -36,6 +39,7 @@ type Form = {
 export function SubmittedForms() {
   const [forms, setForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchForms = async () => {
@@ -95,16 +99,25 @@ export function SubmittedForms() {
         form.status === FormStatusEnums.Submitted ? (
           <div className="flex gap-2">
             <button
-              className="text-green-600 hover:underline"
+              className="text-green-600 hover:text-green-800"
               onClick={() => handleStatusChange(form.id, "approved")}
+              title="Approve"
             >
-              Approve
+              <Check className="w-5 h-5" />
             </button>
             <button
-              className="text-red-600 hover:underline"
+              className="text-red-600 hover:text-red-800"
               onClick={() => handleStatusChange(form.id, "rejected")}
+              title="Reject"
             >
-              Reject
+              <X className="w-5 h-5" />
+            </button>
+            <button
+              className="text-blue-600 hover:text-blue-800"
+              onClick={() => navigate(`/forms/view/${form.id}`)}
+              title="View"
+            >
+              <Eye className="w-5 h-5" />
             </button>
           </div>
         ) : (
@@ -121,7 +134,7 @@ export function SubmittedForms() {
       <DataTable
         data={forms}
         columns={columns}
-        searchKeys={["status"]} // optional, adjust as needed
+        searchKeys={["status"]}
         itemsPerPage={10}
         emptyMessage="No submitted forms found"
       />
