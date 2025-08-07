@@ -7,14 +7,14 @@ import { Loader } from "@/components/ui/loader"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 
-interface SubmittedForm {
+interface ViewForm {
   id: string
   createdAt: string
   answers: Record<string, any>
 }
 
 export function SubmittedFormsSection() {
-  const [submittedForms, setSubmittedForms] = useState<SubmittedForm[]>([])
+  const [submittedForms, setSubmittedForms] = useState<ViewForm[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,7 +34,7 @@ export function SubmittedFormsSection() {
     navigate(`/forms/view/${formId}`)
   }
 
-  const handleDownload = (form: SubmittedForm) => {
+  const handleDownload = (form: ViewForm) => {
     const doc = new jsPDF()
     doc.setFontSize(16)
     doc.text(`Form ID: ${form.id}`, 14, 20)

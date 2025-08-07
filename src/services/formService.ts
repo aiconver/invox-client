@@ -37,3 +37,22 @@ export const submitForm = async ({
   if (response.data?.error) throw new Error(response.data.error.message);
   return response.data.result;
 };
+
+
+export const updateFormStatus = async ({
+  formId,
+  status,
+}: {
+  formId: string;
+  status: "submitted" | "approved" | "rejected";
+}): Promise<{ message: string; formId: string }> => {
+  const response = await apiClient.post("/rpc", {
+    jsonrpc: "2.0",
+    method: "form.update",
+    params: { formId, status },
+    id: 1,
+  });
+
+  if (response.data?.error) throw new Error(response.data.error.message);
+  return response.data.result;
+};
