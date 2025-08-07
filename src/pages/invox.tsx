@@ -2,9 +2,8 @@ import { useTranslation } from "react-i18next";
 import { Navbar } from "@/components/layout/navbar";
 import { RecentTemplatesSection } from "@/components/invox/recent-templates-section";
 import { DashboardActions } from "@/components/invox/DashboardActions";
-import { SubmittedFormsSection } from "@/components/invox/submited-form-employee";
+import { SubmittedForms } from "@/components/invox/submited-form";
 import { useAuthRoles } from "@/components/auth/use-auth-roles";
-import { SubmittedForms } from "@/components/invox/submited-form-admin";
 
 export function Invox() {
 	const { t } = useTranslation();
@@ -25,7 +24,7 @@ export function Invox() {
 						<div className="max-w-7xl mx-auto">
 							<RecentTemplatesSection />
 						</div>
-						<SubmittedFormsSection />
+						<SubmittedForms />
 					</>
 				)}
 			</main>
