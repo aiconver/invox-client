@@ -4,10 +4,11 @@ import { getSubmittedForms, updateFormStatus } from "@/services";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import DataTable from "@/components/ui/data-table";
-import { Check, X, Eye, FileText } from "lucide-react";
+import { Check, X, Eye, FileText, Edit } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useAuthRoles } from "../auth/use-auth-roles";
+import { APP_ROUTES } from "@/lib/routes";
 
 const FormStatusEnums = {
   Submitted: "submitted",
@@ -173,52 +174,84 @@ export function SubmittedForms() {
     return <p className="text-center text-red-500 py-6 text-sm">{error}</p>;
   }
 
-  if (!isAdmin) {
-    return (
-      <section className="mb-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold tracking-tight">Your Submitted Forms</h2>
-        </div>
-        <div className="max-w-7xl mx-auto">
-          {forms.length === 0 ? (
-            <p className="text-center text-muted-foreground py-6 text-sm">
-              You haven’t submitted any forms yet.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {forms.map((form) => (
-                <div
-                  key={form.id}
-                  className="rounded-xl border bg-white p-6 shadow-sm flex flex-col"
-                >
-                  <div className="bg-muted p-3 rounded-md mb-4 w-fit">
+ if (!isAdmin) {
+  return (
+    <section className="mb-10">
+      <div className="max-w-7xl mx-auto flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold tracking-tight">Your Submitted Forms</h2>
+      </div>
+
+      <div className="max-w-7xl mx-auto">
+        {forms.length === 0 ? (
+          <p className="text-center text-muted-foreground py-6 text-sm">
+            You haven’t submitted any forms yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {forms.map((form) => (
+              <div
+                key={form.id}
+                className="rounded-xl border bg-white p-5 shadow-sm flex flex-col gap-4 transition hover:shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="bg-muted p-3 rounded-md">
                     <FileText className="w-5 h-5 text-primary" />
                   </div>
-
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Submitted on:
-                    <br />
-                    <span className="text-black font-medium">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">Submitted on</span>
+                    <span className="text-sm font-medium">
                       {new Date(form.createdAt).toLocaleString()}
                     </span>
-                  </p>
-
-                  <div className="mt-auto flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/forms/view/${form.id}`)}>
-                      View
-                    </Button>
-                    <Button variant="secondary" size="sm" onClick={() => handleDownload(form)}>
-                      Download
-                    </Button>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      Status:{" "}
+                      <span className="capitalize font-medium text-foreground">{form.status}</span>
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-    );
-  }
+
+                <div className="mt-auto flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => navigate(`/forms/view/${form.id}`)}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleDownload(form)}
+                  >
+                    Download
+                  </Button>
+                  {form.status === FormStatusEnums.Rejected && (
+                      <Button
+                      variant="outline"
+                      className="text-sm mt-auto w-full"
+                      icon={<Edit className="w-4 h-4" />}
+                      onClick={() => {
+                        const path =
+                          form.processingType === "HybridFeedback"
+                            ? APP_ROUTES.hybridform.to.replace(":formId", encodeURIComponent(form.templateId))
+                            : APP_ROUTES.form.to.replace(":formId", encodeURIComponent(form.templateId))
+                        navigate(path)
+                      }}
+                    >
+                      Re-Fill
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 
   return (
     <div className="p-4">

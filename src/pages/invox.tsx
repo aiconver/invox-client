@@ -14,19 +14,12 @@ export function Invox() {
 			<Navbar />
 			<main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-12 py-6 w-full space-y-10">
 				<DashboardActions />
-				{isAdmin && (
-					<>
-					 <SubmittedForms/>
-					</>
-				)}
 				{isEmployee && (
-					<>
-						<div className="max-w-7xl mx-auto">
-							<RecentTemplatesSection />
-						</div>
-						<SubmittedForms />
-					</>
+					<div className="max-w-7xl mx-auto">
+						<RecentTemplatesSection />
+					</div>
 				)}
+				<SubmittedForms />
 			</main>
 		</div>
 	);
