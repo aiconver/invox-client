@@ -23,7 +23,7 @@ export function DashboardActions() {
   return (
     <div className="max-w-7xl mx-auto flex flex-wrap justify-end gap-2">
       <Button onClick={handleStartFilling} variant="default" size="sm" icon={<FileEdit />}>
-        Start Filling Form
+        {isAdmin ? "View Forms" : "Start Filling Form" }
       </Button>
       {isAdmin && (
         <>
