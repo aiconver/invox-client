@@ -1,7 +1,7 @@
 import { Trans } from "react-i18next";
 import axios from "axios";
 import type { AuthContextProps } from "react-oidc-context";
-import config from "@/config/CombinedConfig";
+import config from "@/config/combined-config";
 
 const apiClient = axios.create({
 	baseURL: config.apiBaseUrl,

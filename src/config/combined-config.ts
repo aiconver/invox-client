@@ -1,4 +1,4 @@
-import { frontendEnvSchema } from "./envSchema";
+import { frontendEnvSchema } from "./env-schema";
 
 const rawEnv = {
 	VITE_APP_KEYCLOAK_REALM: import.meta.env.VITE_APP_KEYCLOAK_REALM,

@@ -1,6 +1,6 @@
 import { Trans } from "react-i18next";
 import { User } from "oidc-client-ts";
-import config from "@/config/CombinedConfig";
+import config from "@/config/combined-config";
 
 export function getUser() {
 	const oidcStorage = localStorage.getItem(

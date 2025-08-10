@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
 import { processForm } from "@/services";
-import { EditableFormPreview } from "../invox/EditableFormPreview";
+import { EditableFormPreview } from "../invox/editable-form-preview";
 
 interface Props {
 	formId: string;

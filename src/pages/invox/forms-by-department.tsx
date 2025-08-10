@@ -8,7 +8,7 @@ import { APP_ROUTES } from "@/lib/routes"
 import { BackButton } from "@/components/ui/back-button"
 import { useAuthRoles } from "@/components/auth/use-auth-roles"
 import { useState } from "react"
-import { AssignUsersModal } from "@/components/invox/AssignUsersModal"
+import { AssignUsersModal } from "@/components/invox/assign-users-modal"
 
 export function FormsByDepartmentPage() {
   const { isAdmin, isEmployee } = useAuthRoles()

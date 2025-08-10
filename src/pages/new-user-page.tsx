@@ -1,8 +1,8 @@
 
-import { addUser } from "@/services/userService";
+import { addUser } from "@/services/user";
 import { Navbar } from "@/components/layout/navbar";
 import { BackButton } from "@/components/ui/back-button";
-import { UserForm } from "@/components/invox/UserForm";
+import { UserForm } from "@/components/invox/user-form";
 
 export default function NewUserPage() {
   return (

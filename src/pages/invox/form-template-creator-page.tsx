@@ -1,4 +1,4 @@
-import { FormTemplateEditor } from "@/components/invox/FormTemplateEditor";
+import { FormTemplateEditor } from "@/components/invox/form-template-editor";
 import { Navbar } from "@/components/layout/navbar";
 import { BackButton } from "@/components/ui/back-button";
 

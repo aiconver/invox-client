@@ -20,10 +20,10 @@ import { NotFound } from "./pages/not-found.tsx";
 import { FormViewPage } from "./pages/invox/form-view.tsx";
 import { HybridFormPage } from "./pages/invox/hybrid-form.tsx";
 import { UsersPage } from "./pages/users.tsx";
-import NewUserPage from "./pages/NewUserPage.tsx";
-import EditUserPage from "./pages/EditUserPage.tsx";
-import { FormTemplateCreatorPage } from "./pages/invox/FormTemplateCreatorPage.tsx";
-import { FormTemplateEditPage } from "./pages/invox/FormTemplateEditPage.tsx";
+import NewUserPage from "./pages/new-user-page.tsx";
+import EditUserPage from "./pages/edit-user-page.tsx";
+import { FormTemplateCreatorPage } from "./pages/invox/form-template-creator-page.tsx";
+import { FormTemplateEditPage } from "./pages/invox/form-template-edit-page.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

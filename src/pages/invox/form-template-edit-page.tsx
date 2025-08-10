@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/navbar";
 import { BackButton } from "@/components/ui/back-button";
-import { FormTemplateEditor } from "@/components/invox/FormTemplateEditor";
+import { FormTemplateEditor } from "@/components/invox/form-template-editor";
 
 export function FormTemplateEditPage() {
   const { formTemplateId } = useParams<{ formTemplateId: string }>();

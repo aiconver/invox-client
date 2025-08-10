@@ -2,7 +2,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { getFormDepartments } from "@/services";
-import { DepartmentGrid } from "@/components/invox/DepartmentGrid";
+import { DepartmentGrid } from "@/components/invox/department-grid";
 import { useNavigate } from "react-router-dom";
 import { APP_ROUTES } from "@/lib/routes";
 import { BackButton } from "@/components/ui/back-button";

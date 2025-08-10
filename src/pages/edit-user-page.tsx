@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { UserForm } from "@/components/invox/UserForm";
-import { getUserById, updateUser } from "@/services/userService";
+import { UserForm } from "@/components/invox/user-form";
+import { getUserById, updateUser } from "@/services/user";
 import { Navbar } from "@/components/layout/navbar";
 import { BackButton } from "@/components/ui/back-button";
 import { UserFormInput } from "@/types/user";

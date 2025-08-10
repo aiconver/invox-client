@@ -1,5 +1,5 @@
 // components/invox/DepartmentGrid.tsx
-import { DepartmentCard } from "./DepartmentCard";
+import { DepartmentCard } from "./department-card";
 
 interface Department {
   name: string;

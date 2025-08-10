@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Navbar } from "@/components/layout/navbar";
 import { RecentTemplatesSection } from "@/components/invox/recent-templates-section";
-import { DashboardActions } from "@/components/invox/DashboardActions";
+import { DashboardActions } from "@/components/invox/dashboard-actions";
 import { SubmittedForms } from "@/components/invox/submited-form";
 import { useAuthRoles } from "@/components/auth/use-auth-roles";
 
