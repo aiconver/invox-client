@@ -37,7 +37,7 @@ export default function EditUserPage() {
       <Navbar />
       <BackButton label="Back to Users" to="/users" />
       <div className="flex-1 overflow-auto p-6">
-        <h2 className="text-xl font-semibold text-center mb-6">Edit User</h2>
+        <h2 className="text-xl font-semibold text-center mb-6">Edit user</h2>
         <UserForm
           initialData={initialData}
           isEdit
