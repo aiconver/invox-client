@@ -42,7 +42,6 @@ export function AppTopbar() {
 				{/* Brand */}
 				<Link to={APP_ROUTES.form.to} className="flex items-center gap-2">
 					<img src="/logo.svg" alt="logo" className="size-8" />
-					<span className="font-semibold tracking-tight">AI Conver</span>
 				</Link>
 
 
