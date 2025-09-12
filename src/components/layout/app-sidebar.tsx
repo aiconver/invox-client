@@ -22,17 +22,12 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "react-oidc-context";
+import { Button } from "../ui/button";
 
-export function AppSidebar() {
+export function AppTopbar() {
 	const { t } = useTranslation();
 	const location = useLocation();
 	const { user, signoutRedirect } = useAuth();
-
-	const availableRoutes: AppRoute[] = [];
-
-	availableRoutes.push(
-		APP_ROUTES["form"],
-	);
 
 	const isRouteActive = (route: AppRoute) => {
 		const fullPath = location.pathname + location.search;
@@ -40,58 +35,39 @@ export function AppSidebar() {
 		return regex.test(fullPath);
 	};
 
+
 	return (
-		<Sidebar>
-			<SidebarHeader className="items-center">
-				<img src="/logo.svg" alt="logo" className="size-10" />
-			</SidebarHeader>
-			<SidebarContent>
-				<SidebarGroup>
-					<SidebarGroupLabel>AI Conver</SidebarGroupLabel>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{availableRoutes.map((route) => {
-								const { to, label, icon: Icon } = route;
-								return (
-									<SidebarMenuItem key={to}>
-										<SidebarMenuButton
-											asChild
-											isActive={isRouteActive(route)}
-										>
-											<Link to={to}>
-												{Icon && <Icon />}
-												<span>{t(label)}</span>
-											</Link>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								);
-							})}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-			</SidebarContent>
-			<SidebarFooter>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<SidebarMenuButton>
-									<MdOutlinePerson /> {user?.profile.name}
-									<MdChevronRight className="ml-auto rotate-90" />
-								</SidebarMenuButton>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								side="top"
-								className="w-[--radix-popper-anchor-width]"
-							>
-								<DropdownMenuItem onClick={() => void signoutRedirect()}>
-									<span>{t("common.signOut")}</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</SidebarMenuItem>
-				</SidebarMenu>
-			</SidebarFooter>
-		</Sidebar>
+		<header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+			<div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-3 px-3">
+				{/* Brand */}
+				<Link to={APP_ROUTES.form.to} className="flex items-center gap-2">
+					<img src="/logo.svg" alt="logo" className="size-8" />
+					<span className="font-semibold tracking-tight">AI Conver</span>
+				</Link>
+
+
+				{/* Spacer */}
+				<div className="ml-auto" />
+
+
+				{/* User menu */}
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant="ghost" size="sm" className="flex items-center gap-2">
+							<MdOutlinePerson className="h-5 w-5" />
+							<span className="max-w-[14rem] truncate">
+								{user?.profile?.name || t("common.account")}
+							</span>
+							<MdChevronRight className="ml-1 rotate-90" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-56">
+						<DropdownMenuItem onClick={() => void signoutRedirect()}>
+							{t("common.signOut")}
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
+		</header>
 	);
 }

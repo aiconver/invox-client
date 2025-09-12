@@ -13,20 +13,18 @@ export function DynamicBreadcrumb() {
 	const { t } = useTranslation();
 	const location = useLocation();
 
-	// Match using regex pattern instead of exact .to path
+
 	const currentPathRoute = Object.values(APP_ROUTES).find((route) =>
 		new RegExp(route.pathPattern).test(location.pathname)
 	);
 
-	if (!currentPathRoute) {
-		return null;
-	}
+	if (!currentPathRoute) return null;
 
 	return (
 		<Breadcrumb>
 			<BreadcrumbList>
 				<BreadcrumbItem>
-					<BreadcrumbPage>{t(currentPathRoute.label)}</BreadcrumbPage>
+					{/* <BreadcrumbPage>{t(currentPathRoute.label)}</BreadcrumbPage> */}
 				</BreadcrumbItem>
 			</BreadcrumbList>
 		</Breadcrumb>
