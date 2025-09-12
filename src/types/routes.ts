@@ -6,17 +6,7 @@ export type AppRoute = {
 };
 
 const routes = [
-	"invox",
-	"formsByDepartment",
 	"form",
-	"hybridform",
-	"departments",
-	"formView",
-	"formTemplateCreate",
-	"formTemplateEdit",
-	"users",
-	"userNew",
-	"userEdit",
 ] as const;
 
 type Route = (typeof routes)[number];

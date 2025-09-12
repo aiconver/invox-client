@@ -31,7 +31,7 @@ export function AppSidebar() {
 	const availableRoutes: AppRoute[] = [];
 
 	availableRoutes.push(
-		APP_ROUTES["invox"],
+		APP_ROUTES["form"],
 	);
 
 	const isRouteActive = (route: AppRoute) => {

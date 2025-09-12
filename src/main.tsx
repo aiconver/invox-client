@@ -13,17 +13,7 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { Invox } from "./pages/invox.tsx";
-import { DepartmentsPage } from "./pages/invox/departments.tsx"; // ✅ New Page
-import { FormsByDepartmentPage } from "./pages/invox/forms-by-department.tsx";
-import { FormPage } from "./pages/invox/form.tsx";
 import { NotFound } from "./pages/not-found.tsx";
-import { FormViewPage } from "./pages/invox/form-view.tsx";
-import { HybridFormPage } from "./pages/invox/hybrid-form.tsx";
-import { UsersPage } from "./pages/users.tsx";
-import NewUserPage from "./pages/new-user-page.tsx";
-import EditUserPage from "./pages/edit-user-page.tsx";
-import { FormTemplateCreatorPage } from "./pages/invox/form-template-creator-page.tsx";
-import { FormTemplateEditPage } from "./pages/invox/form-template-edit-page.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -44,17 +34,8 @@ root.render(
 							<Routes>
 								<Route element={<ProtectedRoute />}>
 									<Route element={<MainLayout />}>
-										<Route path={APP_ROUTES["invox"].to} element={<Invox />} />
-										<Route path={APP_ROUTES["departments"].to} element={<DepartmentsPage />} /> {/* ✅ Added */}
-										<Route path={APP_ROUTES["formsByDepartment"].to} element={<FormsByDepartmentPage />} />
-										<Route path={APP_ROUTES["form"].to} element={<FormPage />} />
-										<Route path={APP_ROUTES["hybridform"].to} element={<HybridFormPage />} />
-										<Route path={APP_ROUTES["formView"].to} element={<FormViewPage />} />
-										<Route path={APP_ROUTES["formTemplateCreate"].to} element={<FormTemplateCreatorPage />} />
-										<Route path={APP_ROUTES["formTemplateEdit"].to} element={<FormTemplateEditPage />} />
-										<Route path={APP_ROUTES["users"].to} element={<UsersPage />} />
-										<Route path={APP_ROUTES["userNew"].to} element={<NewUserPage />} />
-										<Route path={APP_ROUTES["userEdit"].to} element={<EditUserPage />} />
+										<Route path={APP_ROUTES["form"].to} element={<Invox />} />
+										{/* <Route path={APP_ROUTES["form"].to} element={<FormPage />} /> */}
 									</Route>
 								</Route>
 								<Route path="*" element={<NotFound />} />
