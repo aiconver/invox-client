@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Navbar } from "./navbar";
 
 export function MainLayout() {
