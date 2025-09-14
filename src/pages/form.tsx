@@ -23,7 +23,12 @@ type DynField = {
 // ---------- helper: call /form/fill ----------
 async function fillTemplateApi(input: {
   templateId: string;
-  transcript: string;
+  // BACK-COMPAT: we still accept `transcript` (used if `newTranscript` is not provided)
+  transcript?: string;
+  // NEW: split transcripts
+  oldTranscript?: string;
+  newTranscript?: string;
+
   fields: DynField[];
   currentValues?: Record<string, { value: any; source?: "user" | "ai"; locked?: boolean }>;
   options?: {
@@ -42,7 +47,12 @@ async function fillTemplateApi(input: {
   if (!res.ok || body?.success === false) {
     throw new Error(body?.error || `HTTP ${res.status}`);
   }
-  return body.data as { filled: Record<string, { value: any }>; model: string };
+  // backend now MAY return transcript: { old, new, combined }
+  return body.data as {
+    filled: Record<string, { value: any }>;
+    model: string;
+    transcript?: { old: string; new: string; combined: string };
+  };
 }
 
 // ---------- helper: map API filled -> plain patch ----------
@@ -73,9 +83,11 @@ export default function Invox() {
   // keep current user-entered values in parent (for iterative fills)
   const [currentValues, setCurrentValues] = React.useState<Record<string, any>>({});
 
+  // NEW: keep rolling combined transcript to send as "oldTranscript" on next turn
+  const [combinedTranscript, setCombinedTranscript] = React.useState<string>("");
+
   // ChatPanel -> transcript -> trigger fill
-  const handleTranscript = async (transcript: string) => {
-    console.log("[Invox] onTranscript len:", transcript?.length || 0);
+  const handleTranscript = async (newTranscriptText: string) => {
     try {
       setIsFilling(true);
 
@@ -88,16 +100,30 @@ export default function Invox() {
         current[f.id] = { value: toNullIfEmpty(currentValues?.[f.id]), source: "user" };
       }
 
+      // Send split transcripts. For back-compat, we also include `transcript` (not required).
       const data = await fillTemplateApi({
         templateId: "tmpl_incident_v1",
-        transcript,
+        oldTranscript: combinedTranscript || "",
+        newTranscript: newTranscriptText || "",
+        transcript: newTranscriptText || "", // optional, kept for BC with older backend
         fields: FIELDS,
         currentValues: current,
-        options: { mode: "incremental", preserveUserEdits: false, fillOnlyEmpty: true, returnEvidence: true },
+        options: {
+          mode: "incremental",
+          preserveUserEdits: false,
+          fillOnlyEmpty: true,
+          returnEvidence: true,
+        },
       });
 
       const nextPatch = filledToPatch(data.filled);
       setPatch(nextPatch);
+
+      // Update rolling combined transcript from backend if available; else append locally
+      const nextCombined =
+        data.transcript?.combined ??
+        [combinedTranscript, newTranscriptText].filter(Boolean).join("\n");
+      setCombinedTranscript(nextCombined);
     } catch (e: any) {
       console.error("Fill failed:", e?.message || e);
     } finally {
