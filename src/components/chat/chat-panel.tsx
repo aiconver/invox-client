@@ -3,7 +3,7 @@
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RecorderControls } from "./controls";
-import { TranscriptEditor } from "./transcript-editor";
+// Removed TranscriptEditor import — we no longer allow manual edits
 import { useRecorder } from "@/hooks/useAudioRecorder";
 import { AssistantBubble, UserBubble } from "./Bubbles";
 
@@ -30,9 +30,7 @@ export default function ChatPanel({
   const [processing, setProcessing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const [transcript, setTranscript] = React.useState(
-    "We encountered an issue with the conveyor belt malfunctioning. The problem was noticed during the morning shift by John Smith. The immediate action taken was to stop the machine and clear the jam, but the underlying cause needs investigation."
-  );
+  // Removed editable transcript state and dummy initial value
 
   const [messages, setMessages] = React.useState<React.ReactNode[]>([
     <AssistantBubble key="intro">
@@ -72,7 +70,9 @@ export default function ChatPanel({
     await start();
     setMessages((prev) => [
       ...prev,
-      <AssistantBubble key={`started-${Date.now()}`}>🎙️ Recording started… speak now.</AssistantBubble>,
+      <AssistantBubble key={`started-${Date.now()}`}>
+        🎙️ Recording started… speak now.
+      </AssistantBubble>,
     ]);
   };
 
@@ -80,25 +80,26 @@ export default function ChatPanel({
     await stop();
     setMessages((prev) => [
       ...prev,
-      <AssistantBubble key={`stopped-${Date.now()}`}>⏹️ Recording stopped.</AssistantBubble>,
+      <AssistantBubble key={`stopped-${Date.now()}`}>
+        ⏹️ Recording stopped.
+      </AssistantBubble>,
     ]);
   };
 
   const handleProcess = async () => {
-    setMessages((prev) => [...prev, <UserBubble key={`u-${Date.now()}`}>{transcript}</UserBubble>]);
-
     try {
       setProcessing(true);
       setError(null);
 
       if (listening) await stop();
 
-      // No blob? use typed transcript
+      // Require an actual recording — no manual/typed transcript fallback
       if (!recordedBlob || recordedBlob.size === 0) {
-        onTranscript(transcript);
+        const msg = "No recording found. Please record audio first.";
+        setError(msg);
         setMessages((prev) => [
           ...prev,
-          <AssistantBubble key={`a-${Date.now()}`}>No recording found; used the typed transcript instead.</AssistantBubble>,
+          <AssistantBubble key={`no-blob-${Date.now()}`}>❌ {msg}</AssistantBubble>,
         ]);
         return;
       }
@@ -129,12 +130,20 @@ export default function ChatPanel({
       const transcriptFromApi: string | undefined = data?.data?.transcript ?? data?.transcript;
       console.log("Transcription result:", transcriptFromApi);
 
-      onTranscript(transcriptFromApi || transcript);
+      if (!transcriptFromApi) {
+        throw new Error("No transcript returned by the server.");
+      }
 
+      // Display ONLY what the user actually said (from API). No dummy text, no editing
       setMessages((prev) => [
         ...prev,
-        <AssistantBubble key={`proc-${Date.now()}`}>✅ Transcript ready. Filling the form…</AssistantBubble>,
+        <UserBubble key={`u-${Date.now()}`}>{transcriptFromApi}</UserBubble>,
+        <AssistantBubble key={`proc-${Date.now()}`}>
+          ✅ Transcript ready. Filling the form…
+        </AssistantBubble>,
       ]);
+
+      onTranscript(transcriptFromApi);
     } catch (err: any) {
       const msg = err?.message ?? "Failed to process recording.";
       setError(msg);
@@ -162,7 +171,7 @@ export default function ChatPanel({
         />
       </div>
 
-      {/* Scrollable middle: messages + transcript editor */}
+      {/* Scrollable middle: messages only (editor removed) */}
       <div className="flex-1 min-h-0 px-4 pb-4">
         <ScrollArea className="h-full rounded-lg border bg-background p-4">
           <div className="flex flex-col gap-4">
@@ -172,12 +181,6 @@ export default function ChatPanel({
                 <span className="text-red-600 font-medium">Error:</span> {error}
               </AssistantBubble>
             )}
-
-            {/* Editor is part of the scrollable content so controls stay fixed */}
-            <div className="pt-2">
-              <TranscriptEditor value={transcript} onChange={setTranscript} />
-            </div>
-
             {/* Spacer so content never hides beneath the sticky header’s shadow */}
             <div className="h-2" aria-hidden />
           </div>
