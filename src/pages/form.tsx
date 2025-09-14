@@ -81,8 +81,11 @@ export default function Invox() {
 
       // shape currentValues for API (source: user)
       const current: Record<string, { value: any; source: "user" }> = {};
+      const toNullIfEmpty = (v: any) =>
+        typeof v === "string" ? (v.trim() === "" ? null : v) : (v ?? null);
+
       for (const f of FIELDS) {
-        current[f.id] = { value: currentValues?.[f.id] ?? null, source: "user" };
+        current[f.id] = { value: toNullIfEmpty(currentValues?.[f.id]), source: "user" };
       }
 
       const data = await fillTemplateApi({
@@ -90,7 +93,7 @@ export default function Invox() {
         transcript,
         fields: FIELDS,
         currentValues: current,
-        options: { mode: "incremental", preserveUserEdits: true, returnEvidence: true },
+        options: { mode: "incremental", preserveUserEdits: true, fillOnlyEmpty: true, returnEvidence: true },
       });
 
       const nextPatch = filledToPatch(data.filled);
