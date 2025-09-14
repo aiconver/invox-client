@@ -3,15 +3,20 @@
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RecorderControls } from "./controls";
-// Removed TranscriptEditor import — we no longer allow manual edits
 import { useRecorder } from "@/hooks/useAudioRecorder";
-import { AssistantBubble, UserBubble } from "./Bubbles";
+import { AssistantMessage, UserMessage } from "./Bubbles";
 
 type ChatPanelProps = {
   missingFields: string[];
   onTranscript: (transcript: string) => void;
-  onExtract?: (values: Record<string, any>) => void; // (unused now)
+  onExtract?: (values: Record<string, any>) => void;
   isFilling?: boolean;
+};
+
+type Message = {
+  id: string;
+  type: 'assistant' | 'user';
+  content: React.ReactNode;
 };
 
 function mimeToExt(mime?: string) {
@@ -30,16 +35,20 @@ export default function ChatPanel({
   const [processing, setProcessing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Removed editable transcript state and dummy initial value
-
-  const [messages, setMessages] = React.useState<React.ReactNode[]>([
-    <AssistantBubble key="intro">
-      <p>👋 Hi!</p>
-      <p className="mt-2">
-        Click <strong>Start</strong> to record. When you’re done, click <strong>Stop</strong>, then{" "}
-        <strong>Process</strong> to transcribe and fill the form.
-      </p>
-    </AssistantBubble>,
+  const [messages, setMessages] = React.useState<Message[]>([
+    {
+      id: 'intro',
+      type: 'assistant',
+      content: (
+        <>
+          <p>👋 Hi!</p>
+          <p className="mt-2">
+            Click <strong>Start</strong> to record. When you're done, click <strong>Stop</strong>, then{" "}
+            <strong>Process</strong> to transcribe and fill the form.
+          </p>
+        </>
+      ),
+    },
   ]);
 
   // show missing fields (deduped)
@@ -51,9 +60,15 @@ export default function ChatPanel({
 
     setMessages((prev) => [
       ...prev,
-      <AssistantBubble key={`missing-${Date.now()}`}>
-        I couldn’t find <strong>{missingFields.join(", ")}</strong>. Please provide them.
-      </AssistantBubble>,
+      {
+        id: `missing-${Date.now()}`,
+        type: 'assistant',
+        content: (
+          <>
+            I couldn't find <strong>{missingFields.join(", ")}</strong>. Please provide them.
+          </>
+        ),
+      },
     ]);
   }, [missingFields]);
 
@@ -62,7 +77,11 @@ export default function ChatPanel({
     if (!recError) return;
     setMessages((prev) => [
       ...prev,
-      <AssistantBubble key={`rec-err-${Date.now()}`}>❌ {recError}</AssistantBubble>,
+      {
+        id: `rec-err-${Date.now()}`,
+        type: 'assistant',
+        content: `❌ ${recError}`,
+      },
     ]);
   }, [recError]);
 
@@ -70,9 +89,11 @@ export default function ChatPanel({
     await start();
     setMessages((prev) => [
       ...prev,
-      <AssistantBubble key={`started-${Date.now()}`}>
-        🎙️ Recording started… speak now.
-      </AssistantBubble>,
+      {
+        id: `started-${Date.now()}`,
+        type: 'assistant',
+        content: '🎙️ Recording started… speak now.',
+      },
     ]);
   };
 
@@ -80,9 +101,11 @@ export default function ChatPanel({
     await stop();
     setMessages((prev) => [
       ...prev,
-      <AssistantBubble key={`stopped-${Date.now()}`}>
-        ⏹️ Recording stopped.
-      </AssistantBubble>,
+      {
+        id: `stopped-${Date.now()}`,
+        type: 'assistant',
+        content: '⏹️ Recording stopped.',
+      },
     ]);
   };
 
@@ -99,7 +122,11 @@ export default function ChatPanel({
         setError(msg);
         setMessages((prev) => [
           ...prev,
-          <AssistantBubble key={`no-blob-${Date.now()}`}>❌ {msg}</AssistantBubble>,
+          {
+            id: `no-blob-${Date.now()}`,
+            type: 'assistant',
+            content: `❌ ${msg}`,
+          },
         ]);
         return;
       }
@@ -134,13 +161,19 @@ export default function ChatPanel({
         throw new Error("No transcript returned by the server.");
       }
 
-      // Display ONLY what the user actually said (from API). No dummy text, no editing
+      // Display user message and assistant response
       setMessages((prev) => [
         ...prev,
-        <UserBubble key={`u-${Date.now()}`}>{transcriptFromApi}</UserBubble>,
-        <AssistantBubble key={`proc-${Date.now()}`}>
-          ✅ Transcript ready. Filling the form…
-        </AssistantBubble>,
+        {
+          id: `u-${Date.now()}`,
+          type: 'user',
+          content: transcriptFromApi,
+        },
+        {
+          id: `proc-${Date.now()}`,
+          type: 'assistant',
+          content: '✅ Transcript ready. Filling the form…',
+        },
       ]);
 
       onTranscript(transcriptFromApi);
@@ -149,7 +182,11 @@ export default function ChatPanel({
       setError(msg);
       setMessages((prev) => [
         ...prev,
-        <AssistantBubble key={`err-proc-${Date.now()}`}>❌ {String(msg)}</AssistantBubble>,
+        {
+          id: `err-proc-${Date.now()}`,
+          type: 'assistant',
+          content: `❌ ${String(msg)}`,
+        },
       ]);
     } finally {
       setProcessing(false);
@@ -158,33 +195,41 @@ export default function ChatPanel({
 
   return (
     <div className="flex h-[calc(100vh-71px)] min-h-0 flex-col overflow-hidden">
-      {/* Sticky controls header (always visible) */}
-      <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <RecorderControls
-          listening={listening}
-          processing={processing}
-          isFilling={isFilling}
-          recordedBlob={recordedBlob}
-          onStart={startRecording}
-          onStop={stopRecording}
-          onProcess={handleProcess}
-        />
-      </div>
-
-      {/* Scrollable middle: messages only (editor removed) */}
-      <div className="flex-1 min-h-0 px-4 pb-4">
-        <ScrollArea className="h-full rounded-lg border bg-background p-4">
-          <div className="flex flex-col gap-4">
-            {messages}
-            {error && (
-              <AssistantBubble>
-                <span className="text-red-600 font-medium">Error:</span> {error}
-              </AssistantBubble>
+      {/* Chat Area (Top) */}
+      <div className="flex-1 min-h-0 p-4">
+        <ScrollArea className="h-full rounded-lg border bg-background">
+          <div className="p-4 min-h-full">
+            {messages.map((message) =>
+              message.type === 'assistant' ? (
+                <AssistantMessage key={message.id}>{message.content}</AssistantMessage>
+              ) : (
+                <UserMessage key={message.id}>{message.content}</UserMessage>
+              )
             )}
-            {/* Spacer so content never hides beneath the sticky header’s shadow */}
-            <div className="h-2" aria-hidden />
+            {error && (
+              <AssistantMessage>
+                <span className="text-red-600 font-medium">Error:</span> {error}
+              </AssistantMessage>
+            )}
+            {/* Spacer for bottom padding */}
+            <div className="h-4" aria-hidden />
           </div>
         </ScrollArea>
+      </div>
+
+      {/* Controls Panel (Bottom Left) */}
+      <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="p-4">
+          <RecorderControls
+            listening={listening}
+            processing={processing}
+            isFilling={isFilling}
+            recordedBlob={recordedBlob}
+            onStart={startRecording}
+            onStop={stopRecording}
+            onProcess={handleProcess}
+          />
+        </div>
       </div>
     </div>
   );
