@@ -31,8 +31,6 @@ type DynamicFormProps = {
   patch?: Record<string, any> | null;
   onMissingFields?: (missing: string[]) => void;
   onSubmit?: (values: Record<string, any>) => void;
-
-  // bubble current values to parent so iterative fill preserves user edits
   onChange?: (values: Record<string, any>) => void;
 };
 
@@ -119,10 +117,7 @@ export default function IncidentForm({
   onChange,
 }: DynamicFormProps) {
   const schema = useMemo(() => buildSchema(fields), [fields]);
-  const defaults = useMemo(
-    () => mergeValues(fields, values, patch ?? undefined),
-    [fields, values, patch]
-  );
+  const defaults = useMemo(() => mergeValues(fields, values, patch ?? undefined), [fields, values, patch]);
 
   const form = useForm<Record<string, any>>({
     resolver: zodResolver(schema),
@@ -157,30 +152,45 @@ export default function IncidentForm({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="px-4 py-3 border-b bg-background/80 font-semibold">{title}</div>
+      {/* Header */}
+      <div className="px-4 py-3 border-b bg-background/80 font-semibold">
+        {title}
+      </div>
 
-      <div className="flex-1 min-h-0 p-4">
-        <ScrollArea className="h-full rounded-lg">
-          <form id="invox-form" className="grid gap-4" onSubmit={form.handleSubmit(submit)}>
+      {/* Scrollable content area */}
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full">
+          <form
+            id="invox-form"
+            className="grid gap-4 px-4 py-4"
+            onSubmit={form.handleSubmit(submit)}
+          >
             {fields.map((f) => {
               const err = (form.formState.errors as any)[f.id]?.message as string | undefined;
+              const inputId = `fld-${f.id}`;
 
               return (
-                <div className="grid gap-1.5" key={f.id}>
-                  <Label className="text-sm">
+                <div className="grid gap-1.5 min-w-0" key={f.id}>
+                  <Label className="text-sm" htmlFor={inputId}>
                     {f.label} {f.required && <span className="text-destructive">*</span>}
                   </Label>
 
                   {f.type === "textarea" ? (
                     <Textarea
+                      id={inputId}
                       placeholder={f.placeholder}
                       className="min-h-24"
+                      aria-required={!!f.required}
+                      aria-invalid={!!err}
                       {...form.register(f.id)}
                     />
                   ) : f.type === "enum" ? (
                     <select
+                      id={inputId}
                       className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none"
                       defaultValue={(defaults[f.id] ?? "") as any}
+                      aria-required={!!f.required}
+                      aria-invalid={!!err}
                       {...form.register(f.id)}
                     >
                       <option value="">{f.placeholder ?? "Select…"}</option>
@@ -192,22 +202,33 @@ export default function IncidentForm({
                     </select>
                   ) : f.type === "date" ? (
                     <Input
+                      id={inputId}
                       type="date"
                       placeholder={f.placeholder}
+                      autoComplete="off"
+                      aria-required={!!f.required}
+                      aria-invalid={!!err}
                       {...form.register(f.id)}
                       className={err ? "border-destructive" : ""}
                     />
                   ) : f.type === "number" ? (
                     <Input
+                      id={inputId}
                       type="number"
                       inputMode="decimal"
                       placeholder={f.placeholder}
+                      aria-required={!!f.required}
+                      aria-invalid={!!err}
                       {...form.register(f.id, { valueAsNumber: true })}
                       className={err ? "border-destructive" : ""}
                     />
                   ) : (
                     <Input
+                      id={inputId}
                       placeholder={f.placeholder}
+                      autoComplete={f.id === "reporterName" ? "name" : "off"}
+                      aria-required={!!f.required}
+                      aria-invalid={!!err}
                       {...form.register(f.id)}
                       className={err ? "border-destructive" : ""}
                     />
@@ -217,11 +238,21 @@ export default function IncidentForm({
                 </div>
               );
             })}
+
+            {/* Spacer so the sticky footer never overlaps the last field */}
+            <div className="h-20" aria-hidden />
           </form>
         </ScrollArea>
+      </div>
 
-        <div className="mt-3 flex items-center justify-end">
-          <Button type="submit" form="invox-form" className="bg-emerald-600 text-white hover:bg-emerald-700">
+      {/* Sticky submit footer */}
+      <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="px-4 py-3 flex items-center justify-end">
+          <Button
+            type="submit"
+            form="invox-form"
+            className="bg-emerald-600 text-white hover:bg-emerald-700"
+          >
             Submit Form
           </Button>
         </div>

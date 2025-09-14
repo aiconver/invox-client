@@ -22,7 +22,8 @@ export function ResizablePanelGroup({ className, ...props }: ResizablePanelGroup
 }
 
 export function ResizablePanel({ className, ...props }: ResizablePanelProps) {
-  return <BasePanel className={className} {...props} />;
+  // min-w-0 lets children shrink; overflow-hidden ensures inner scroll areas work
+  return <BasePanel className={cx("min-w-0 overflow-hidden", className)} {...props} />;
 }
 
 export function ResizableHandle({ withHandle = false, className, ...props }: ResizableHandleProps) {
