@@ -136,7 +136,7 @@ export function useDebugRecorder({
     // Init hark
     const harker = (hark as any)(stream, {
       interval: 100,   // 100ms checks
-      threshold: -65,  // dB; lower (-70/-75) = more sensitive
+      threshold: -75,  // dB; lower (-70/-75) = more sensitive
       play: false,
     });
     harkRef.current = harker;
