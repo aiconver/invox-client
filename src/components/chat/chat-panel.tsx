@@ -64,9 +64,7 @@ export default function ChatPanel({
     if (!recError) return;
     setMessages((prev) => [
       ...prev,
-      <AssistantBubble key={`rec-err-${Date.now()}`}>
-        ❌ {recError}
-      </AssistantBubble>,
+      <AssistantBubble key={`rec-err-${Date.now()}`}>❌ {recError}</AssistantBubble>,
     ]);
   }, [recError]);
 
@@ -93,7 +91,6 @@ export default function ChatPanel({
       setProcessing(true);
       setError(null);
 
-      // Make sure we’re not still recording
       if (listening) await stop();
 
       // No blob? use typed transcript
@@ -151,10 +148,22 @@ export default function ChatPanel({
   };
 
   return (
-    <div className="flex min-h-0 flex-col h-[calc(100vh-71px)]">
-      
+    <div className="flex h-[calc(100vh-71px)] min-h-0 flex-col overflow-hidden">
+      {/* Sticky controls header (always visible) */}
+      <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <RecorderControls
+          listening={listening}
+          processing={processing}
+          isFilling={isFilling}
+          recordedBlob={recordedBlob}
+          onStart={startRecording}
+          onStop={stopRecording}
+          onProcess={handleProcess}
+        />
+      </div>
 
-      <div className="flex-1 min-h-0 p-4">
+      {/* Scrollable middle: messages + transcript editor */}
+      <div className="flex-1 min-h-0 px-4 pb-4">
         <ScrollArea className="h-full rounded-lg border bg-background p-4">
           <div className="flex flex-col gap-4">
             {messages}
@@ -163,20 +172,17 @@ export default function ChatPanel({
                 <span className="text-red-600 font-medium">Error:</span> {error}
               </AssistantBubble>
             )}
+
+            {/* Editor is part of the scrollable content so controls stay fixed */}
+            <div className="pt-2">
+              <TranscriptEditor value={transcript} onChange={setTranscript} />
+            </div>
+
+            {/* Spacer so content never hides beneath the sticky header’s shadow */}
+            <div className="h-2" aria-hidden />
           </div>
         </ScrollArea>
-
-        <TranscriptEditor value={transcript} onChange={setTranscript} />
       </div>
-      <RecorderControls
-        listening={listening}
-        processing={processing}
-        isFilling={isFilling}
-        recordedBlob={recordedBlob}
-        onStart={startRecording}
-        onStop={stopRecording}
-        onProcess={handleProcess}
-      />
     </div>
   );
 }
