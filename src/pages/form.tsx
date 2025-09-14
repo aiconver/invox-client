@@ -93,7 +93,7 @@ export default function Invox() {
         transcript,
         fields: FIELDS,
         currentValues: current,
-        options: { mode: "incremental", preserveUserEdits: true, fillOnlyEmpty: true, returnEvidence: true },
+        options: { mode: "incremental", preserveUserEdits: false, fillOnlyEmpty: true, returnEvidence: true },
       });
 
       const nextPatch = filledToPatch(data.filled);
