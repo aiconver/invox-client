@@ -1,94 +1,39 @@
 "use client";
 
 import * as React from "react";
-import { MdMic, MdMicOff, MdAssistant, MdSend } from "react-icons/md";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { RecorderControls } from "./controls";
+import { TranscriptEditor } from "./transcript-editor";
+import { useRecorder } from "@/hooks/useAudioRecorder";
+import { AssistantBubble, UserBubble } from "./Bubbles";
 
-/** ---------- Props ---------- */
 type ChatPanelProps = {
-  // generic ids from the dynamic form
   missingFields: string[];
-
-  // parent will call /form/fill after we transcribe
   onTranscript: (transcript: string) => void;
-
-  // optional/back-compat (unused in new flow)
-  onExtract?: (values: Record<string, any>) => void;
-
-  // optional UX flag: disable "Process" button while fill is running
+  onExtract?: (values: Record<string, any>) => void; // (unused now)
   isFilling?: boolean;
 };
 
-/** ---------- Bubbles ---------- */
-function AssistantBubble({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 p-4 shadow-sm">
-      <div className="mb-1 flex items-center gap-2 font-medium">
-        <MdAssistant className="h-5 w-5" /> Assistant
-      </div>
-      <div className="text-sm leading-relaxed">{children}</div>
-    </div>
-  );
-}
-
-function UserBubble({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl bg-primary/5 text-foreground border border-border p-4 shadow-sm">
-      <div className="mb-1 font-medium">You</div>
-      <div className="text-sm leading-relaxed">{children}</div>
-    </div>
-  );
-}
-
-/** ---------- Helpers ---------- */
 function mimeToExt(mime?: string) {
   if (!mime) return "webm";
   const typeOnly = mime.split(";")[0];
   return typeOnly.split("/")[1] || "webm";
 }
 
-async function stopRecorderAndGetBlob(
-  mr: MediaRecorder | null,
-  chunksRef: React.MutableRefObject<BlobPart[]>,
-  fallbackMime: string
-): Promise<Blob | null> {
-  if (!mr) return null;
-
-  if (mr.state === "inactive") {
-    if (chunksRef.current.length === 0) return null;
-    return new Blob(chunksRef.current, { type: mr.mimeType || fallbackMime });
-  }
-
-  await new Promise<void>((resolve) => {
-    mr.addEventListener("stop", () => resolve(), { once: true });
-    mr.stop();
-  });
-
-  if (chunksRef.current.length === 0) return null;
-  return new Blob(chunksRef.current, { type: mr.mimeType || fallbackMime });
-}
-
-/** ---------- Component ---------- */
 export default function ChatPanel({
   onTranscript,
   missingFields,
   onExtract,
   isFilling,
 }: ChatPanelProps) {
-  const [listening, setListening] = React.useState(false);
+  const { listening, recordedBlob, error: recError, start, stop } = useRecorder();
   const [processing, setProcessing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-
-  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
-  const chunksRef = React.useRef<BlobPart[]>([]);
-  const [recordedBlob, setRecordedBlob] = React.useState<Blob | null>(null);
 
   const [transcript, setTranscript] = React.useState(
     "We encountered an issue with the conveyor belt malfunctioning. The problem was noticed during the morning shift by John Smith. The immediate action taken was to stop the machine and clear the jam, but the underlying cause needs investigation."
   );
+
   const [messages, setMessages] = React.useState<React.ReactNode[]>([
     <AssistantBubble key="intro">
       <p>👋 Hi!</p>
@@ -99,7 +44,7 @@ export default function ChatPanel({
     </AssistantBubble>,
   ]);
 
-  // tell user which fields are still missing (deduped)
+  // show missing fields (deduped)
   const lastMissingKeyRef = React.useRef<string>("");
   React.useEffect(() => {
     const key = [...missingFields].sort().join("|");
@@ -114,53 +59,31 @@ export default function ChatPanel({
     ]);
   }, [missingFields]);
 
+  // reflect recorder error into our UI
+  React.useEffect(() => {
+    if (!recError) return;
+    setMessages((prev) => [
+      ...prev,
+      <AssistantBubble key={`rec-err-${Date.now()}`}>
+        ❌ {recError}
+      </AssistantBubble>,
+    ]);
+  }, [recError]);
+
   const startRecording = async () => {
-    try {
-      setError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream);
-      chunksRef.current = [];
-      mr.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
-      };
-      mr.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: mr.mimeType || "audio/webm" });
-        setRecordedBlob(blob);
-        stream.getTracks().forEach((t) => t.stop());
-      };
-      mediaRecorderRef.current = mr;
-      mr.start();
-      setListening(true);
-      setMessages((prev) => [
-        ...prev,
-        <AssistantBubble key={`started-${Date.now()}`}>🎙️ Recording started… speak now.</AssistantBubble>,
-      ]);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to start recording.");
-      setMessages((prev) => [
-        ...prev,
-        <AssistantBubble key={`err-start-${Date.now()}`}>
-          ❌ Couldn’t access the microphone. Please allow permission and try again.
-        </AssistantBubble>,
-      ]);
-    }
+    await start();
+    setMessages((prev) => [
+      ...prev,
+      <AssistantBubble key={`started-${Date.now()}`}>🎙️ Recording started… speak now.</AssistantBubble>,
+    ]);
   };
 
   const stopRecording = async () => {
-    try {
-      setError(null);
-      const mr = mediaRecorderRef.current;
-      if (mr && mr.state !== "inactive") {
-        await stopRecorderAndGetBlob(mr, chunksRef, "audio/webm"); // ensures chunks finalized
-      }
-      setListening(false);
-      setMessages((prev) => [
-        ...prev,
-        <AssistantBubble key={`stopped-${Date.now()}`}>⏹️ Recording stopped.</AssistantBubble>,
-      ]);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to stop recording.");
-    }
+    await stop();
+    setMessages((prev) => [
+      ...prev,
+      <AssistantBubble key={`stopped-${Date.now()}`}>⏹️ Recording stopped.</AssistantBubble>,
+    ]);
   };
 
   const handleProcess = async () => {
@@ -170,21 +93,11 @@ export default function ChatPanel({
       setProcessing(true);
       setError(null);
 
-      // If still recording, stop and wait for final blob
-      let blob = recordedBlob;
-      if (listening || (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive")) {
-        const mr = mediaRecorderRef.current;
-        blob = await stopRecorderAndGetBlob(mr, chunksRef, "audio/webm");
-        setListening(false);
-        setRecordedBlob(blob);
-        setMessages((prev) => [
-          ...prev,
-          <AssistantBubble key={`stopped-auto-${Date.now()}`}>⏹️ Recording stopped automatically.</AssistantBubble>,
-        ]);
-      }
+      // Make sure we’re not still recording
+      if (listening) await stop();
 
-      // If no recording, just use typed transcript
-      if (!blob || blob.size === 0) {
+      // No blob? use typed transcript
+      if (!recordedBlob || recordedBlob.size === 0) {
         onTranscript(transcript);
         setMessages((prev) => [
           ...prev,
@@ -193,13 +106,13 @@ export default function ChatPanel({
         return;
       }
 
-      // Build form-data with the raw audio blob
-      const ext = mimeToExt(blob.type);
+      // Build multipart
+      const ext = mimeToExt(recordedBlob.type);
       const filename = `recording.${ext}`;
       const form = new FormData();
-      form.append("audio", blob, filename);
+      form.append("audio", recordedBlob, filename);
 
-      // Call your backend transcription endpoint
+      // POST → transcribe
       const res = await fetch("/api/v1/form/transcribe", {
         method: "POST",
         body: form,
@@ -209,18 +122,16 @@ export default function ChatPanel({
       try {
         data = await res.json();
       } catch {
-        /* ignore parse errors */
+        /* ignore */
       }
 
       if (!res.ok) {
         throw new Error(data?.error || `HTTP ${res.status}`);
       }
 
-      // ApiResponse<{ transcript: string }>
       const transcriptFromApi: string | undefined = data?.data?.transcript ?? data?.transcript;
       console.log("Transcription result:", transcriptFromApi);
 
-      // Push transcript up so parent can call /form/fill
       onTranscript(transcriptFromApi || transcript);
 
       setMessages((prev) => [
@@ -228,10 +139,11 @@ export default function ChatPanel({
         <AssistantBubble key={`proc-${Date.now()}`}>✅ Transcript ready. Filling the form…</AssistantBubble>,
       ]);
     } catch (err: any) {
-      setError(err?.message ?? "Failed to process recording.");
+      const msg = err?.message ?? "Failed to process recording.";
+      setError(msg);
       setMessages((prev) => [
         ...prev,
-        <AssistantBubble key={`err-proc-${Date.now()}`}>❌ {String(err?.message || "Failed to process the recording.")}</AssistantBubble>,
+        <AssistantBubble key={`err-proc-${Date.now()}`}>❌ {String(msg)}</AssistantBubble>,
       ]);
     } finally {
       setProcessing(false);
@@ -240,45 +152,7 @@ export default function ChatPanel({
 
   return (
     <div className="flex min-h-0 flex-col h-[calc(100vh-71px)]">
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-background/80">
-        <div className="inline-flex items-center gap-2 font-semibold">
-          {listening ? <MdMic className="h-4 w-4 text-emerald-600" /> : <MdMicOff className="h-4 w-4 text-muted-foreground" />}
-          Assistant
-          {recordedBlob && (
-            <span className="ml-2 text-xs text-muted-foreground">
-              recorded ~{Math.max(1, Math.round(recordedBlob.size / 1024))} KB
-            </span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={listening ? "secondary" : "default"}
-            size="sm"
-            onClick={startRecording}
-            disabled={listening || processing}
-            className="gap-2"
-          >
-            <MdMic /> Start
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={stopRecording}
-            disabled={!listening || processing}
-            className="gap-2"
-          >
-            <MdMicOff /> Stop
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleProcess}
-            disabled={processing || isFilling}
-            className="gap-2"
-          >
-            <MdSend /> {processing ? "Processing..." : isFilling ? "Filling..." : "Process"}
-          </Button>
-        </div>
-      </div>
+      
 
       <div className="flex-1 min-h-0 p-4">
         <ScrollArea className="h-full rounded-lg border bg-background p-4">
@@ -292,18 +166,17 @@ export default function ChatPanel({
           </div>
         </ScrollArea>
 
-        <div className="mt-4 space-y-2">
-          <Label htmlFor="transcript" className="text-xs text-muted-foreground">
-            Transcript (manual text; optional)
-          </Label>
-          <Textarea
-            id="transcript"
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            className="min-h-28"
-          />
-        </div>
+        <TranscriptEditor value={transcript} onChange={setTranscript} />
       </div>
+      <RecorderControls
+        listening={listening}
+        processing={processing}
+        isFilling={isFilling}
+        recordedBlob={recordedBlob}
+        onStart={startRecording}
+        onStop={stopRecording}
+        onProcess={handleProcess}
+      />
     </div>
   );
 }
