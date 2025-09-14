@@ -12,7 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { Invox } from "./pages/form.tsx";
+import Invox from "./pages/form.tsx";
 import { NotFound } from "./pages/not-found.tsx";
 
 const rootElement = document.getElementById("root");
