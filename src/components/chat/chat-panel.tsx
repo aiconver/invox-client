@@ -9,6 +9,7 @@ import { useDebugRecorder } from "./useRecorder";
 type ChatPanelProps = {
   missingFields: string[];
   onTranscript: (transcript: string) => void;
+  isFilling: boolean;
 };
 
 type Message = {
@@ -18,7 +19,7 @@ type Message = {
   timestamp: Date;
 };
 
-export default function DebugChatPanel({ onTranscript, missingFields }: ChatPanelProps) {
+export default function DebugChatPanel({ onTranscript, missingFields, isFilling }: ChatPanelProps) {
   const [messages, setMessages] = React.useState<Message[]>([
     { id: "intro", type: "assistant", content: "Hi! Minimal voice capture.", timestamp: new Date() },
   ]);
