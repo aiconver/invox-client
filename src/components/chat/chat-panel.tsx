@@ -3,7 +3,7 @@ import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssistantMessage, UserMessage } from "./Bubbles";
 import { Button } from "@/components/ui/button";
-import { MdPlayArrow, MdPause, MdStop } from "react-icons/md";
+import { MdPlayArrow, MdStop /*, MdPause */ } from "react-icons/md";
 import { useDebugRecorder } from "./useRecorder";
 
 type ChatPanelProps = {
@@ -31,7 +31,7 @@ export default function DebugChatPanel({ onTranscript, missingFields }: ChatPane
       ]);
       onTranscript(t);
     },
-    silenceDurationMs: 5000,
+    silenceDurationMs: 5000, // kept for future auto mode
   });
 
   React.useEffect(() => {
@@ -46,6 +46,9 @@ export default function DebugChatPanel({ onTranscript, missingFields }: ChatPane
       },
     ]);
   }, [missingFields]);
+
+  const canStart = recorder.state === "idle" || recorder.state === "error";
+  const canStopAndProcess = recorder.state === "listening" || recorder.state === "speaking";
 
   return (
     <div className="flex h-[calc(100vh-150px)] min-h-0 flex-col overflow-hidden">
@@ -66,10 +69,29 @@ export default function DebugChatPanel({ onTranscript, missingFields }: ChatPane
       <div className="border-t bg-background/95">
         <div className="p-4 flex items-center justify-between">
           <div className="text-sm">
-            State: <b>{recorder.state}</b> · Audio: <b>{(recorder.audioLevel * 100).toFixed(1)}%</b> ·
-            Silence in: <b>{recorder.silenceCountdown}s</b>
+            State: <b>{recorder.state}</b> · Audio: <b>{(recorder.audioLevel * 100).toFixed(1)}%</b>
+            {/* · Silence in: <b>{recorder.silenceCountdown}s</b>  // [AUTO MODE] keep for later */}
           </div>
           <div className="flex gap-3">
+            <Button
+              onClick={recorder.startManual}
+              disabled={!canStart || recorder.isProcessing}
+              className="gap-2"
+            >
+              <MdPlayArrow /> Start
+            </Button>
+
+            <Button
+              onClick={recorder.stopAndProcess}
+              disabled={!canStopAndProcess}
+              variant="outline"
+              className="gap-2"
+            >
+              <MdStop /> Stop &amp; Process
+            </Button>
+
+            {/*
+            // [AUTO MODE] — kept for later use:
             <Button
               onClick={recorder.toggleAutoMode}
               disabled={recorder.state === "processing"}
@@ -78,11 +100,7 @@ export default function DebugChatPanel({ onTranscript, missingFields }: ChatPane
             >
               {recorder.isAutoMode ? (<><MdPause /> Stop Auto</>) : (<><MdPlayArrow /> Start Auto</>)}
             </Button>
-            {recorder.isListening && (
-              <Button onClick={recorder.manualStop} variant="outline" className="gap-2">
-                <MdStop /> Stop & Process
-              </Button>
-            )}
+            */}
           </div>
         </div>
 

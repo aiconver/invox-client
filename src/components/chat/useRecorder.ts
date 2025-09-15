@@ -6,21 +6,29 @@ export type RecorderState = "idle" | "listening" | "speaking" | "processing" | "
 
 export interface UseDebugRecorderProps {
   onTranscript: (t: string) => void;
-  silenceDurationMs?: number; // default 5000
+  silenceDurationMs?: number; // default 5000 — kept for future auto mode
 }
 
 export interface UseDebugRecorderResult {
   state: RecorderState;
-  isAutoMode: boolean;
   isListening: boolean;
   isSpeaking: boolean;
   isProcessing: boolean;
   audioLevel: number;          // 0..1 (normalized from dB)
-  silenceCountdown: number;    // seconds remaining
-  startAutoMode: () => Promise<void>;
-  stopAutoMode: () => void;
-  toggleAutoMode: () => Promise<void>;
+
+  // ---- Manual mode API (ACTIVE) ----
+  startManual: () => Promise<void>;
+  stopAndProcess: () => Promise<void>;
+  // Alias for backward compatibility:
   manualStop: () => Promise<void>;
+
+  // ---- Automatic mode API (INACTIVE; kept for later) ----
+  // isAutoMode: boolean;
+  // silenceCountdown: number;
+  // startAutoMode: () => Promise<void>;
+  // stopAutoMode: () => void;
+  // toggleAutoMode: () => Promise<void>;
+
   error: string | null;
   clearError: () => void;
 }
@@ -30,9 +38,9 @@ export function useDebugRecorder({
   silenceDurationMs = 5000,
 }: UseDebugRecorderProps): UseDebugRecorderResult {
   const [state, setState] = useState<RecorderState>("idle");
-  const [isAutoMode, setIsAutoMode] = useState(false);
+  // const [isAutoMode, setIsAutoMode] = useState(false); // [AUTO MODE]
   const [audioLevel, setAudioLevel] = useState(0);
-  const [silenceCountdown, setSilenceCountdown] = useState(0);
+  const [silenceCountdown, setSilenceCountdown] = useState(0); // [AUTO MODE]
   const [error, setError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -41,11 +49,11 @@ export function useDebugRecorder({
 
   // hark + timers
   const harkRef = useRef<any>(null);
-  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // [AUTO MODE]
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null); // [AUTO MODE]
 
   // re-arm guard: require fresh speech after each (re)start/processing
-  const hadSpeechSinceRestartRef = useRef<boolean>(false);
+  const hadSpeechSinceRestartRef = useRef<boolean>(false); // [AUTO MODE]
 
   const isListening = state === "listening" || state === "speaking";
   const isSpeaking = state === "speaking";
@@ -62,13 +70,37 @@ export function useDebugRecorder({
     }
   }, []);
 
+  const cleanupStream = useCallback(() => {
+    // Stop hark
+    if (harkRef.current) {
+      try { harkRef.current.stop(); } catch {}
+      harkRef.current = null;
+    }
+    // Stop media recorder if still active
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state !== "inactive") {
+      try { mr.stop(); } catch {}
+    }
+    mediaRecorderRef.current = null;
+
+    // Stop tracks & release mic
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => { try { t.stop(); } catch {} });
+      streamRef.current = null;
+    }
+
+    // Reset timers / counters
+    clearTimers();
+    setSilenceCountdown(0);
+  }, [clearTimers]);
+
   const startMediaRecorder = useCallback((stream: MediaStream) => {
     const mime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/wav";
     const mr = new MediaRecorder(stream, { mimeType: mime });
     mediaRecorderRef.current = mr;
     audioChunksRef.current = [];
     mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
-    mr.start(250); // ensure chunks exist when we stop
+    mr.start(250); // small chunk size ensures we have data on stop
   }, []);
 
   const stopRecorderAndGetBlob = useCallback(async (): Promise<Blob | null> => {
@@ -87,62 +119,46 @@ export function useDebugRecorder({
   }, []);
 
   const processNow = useCallback(async () => {
-  clearTimers();
+    clearTimers();
 
-  const blob = await stopRecorderAndGetBlob();
-  if (!blob) {
-    setError("No recording data");
-    setState("error");
-    return;
-  }
+    const blob = await stopRecorderAndGetBlob();
+    if (!blob) {
+      setError("No recording data");
+      setState("error");
+      return;
+    }
 
-  // Keep your original ext logic if you prefer it over mimeToExt
-  const ext = blob.type.includes("webm") ? "webm" : "wav";
-  const filename = `rec-${Date.now()}.${ext}`;
-  const controller = new AbortController();
+    const ext = blob.type.includes("webm") ? "webm" : "wav";
+    const filename = `rec-${Date.now()}.${ext}`;
+    const controller = new AbortController();
 
-  setState("processing");
+    setState("processing");
 
-  try {
-    const { transcript } = await uploadAndTranscribe(blob, {
-      filename,
-      // Pass any extra fields you previously appended to FormData:
-      // fields: { language: currentLang, sessionId, isAutoMode },
-      onUploadProgress: (e) => {
-        // optional: show progress in UI
-        const pct = e.total ? Math.round((e.loaded / e.total) * 100) : undefined;
-      },
-      signal: controller.signal,
-      // baseUrl: process.env.NEXT_PUBLIC_API_BASE, // only if you really need to override
-    });
+    try {
+      const { transcript } = await uploadAndTranscribe(blob, {
+        filename,
+        onUploadProgress: () => {},
+        signal: controller.signal,
+      });
 
-    if (!transcript) throw new Error("No transcript");
-    onTranscript(transcript);
+      if (!transcript) throw new Error("No transcript");
+      onTranscript(transcript);
 
-    if (isAutoMode && streamRef.current) {
-      hadSpeechSinceRestartRef.current = false;
-      audioChunksRef.current = [];
-      startMediaRecorder(streamRef.current);
-      setSilenceCountdown(0);
-      setState("listening");
-    } else {
+      // If auto mode were enabled, we would restart recording here. For manual, go idle.
+      // if (isAutoMode && streamRef.current) { ... } // [AUTO MODE]
       setState("idle");
+    } catch (e: any) {
+      if (e?.name === "CanceledError" || e?.message === "canceled") {
+        // optional: handle user-cancel differently
+      }
+      setError(e?.message || "Process failed");
+      setState("error");
+    } finally {
+      // In manual mode, always release the mic after processing.
+      cleanupStream();
     }
-  } catch (e: any) {
-    if (e?.name === "CanceledError" || e?.message === "canceled") {
-      // optional: handle user-cancel differently
-    }
-    setError(e?.message || "Process failed");
-    setState("error");
-  } finally {
-  }
-}, [
-  isAutoMode,
-  onTranscript,
-  startMediaRecorder,
-  stopRecorderAndGetBlob,
-  clearTimers,
-]);
+  }, [clearTimers, cleanupStream, onTranscript, stopRecorderAndGetBlob]);
+
   const startRecording = useCallback(async () => {
     setError(null);
 
@@ -151,13 +167,12 @@ export function useDebugRecorder({
     });
     streamRef.current = stream;
 
-    // Start MediaRecorder
     startMediaRecorder(stream);
 
-    // Init hark
+    // Init hark for volume meter (auto actions commented)
     const harker = (hark as any)(stream, {
-      interval: 100,   // 100ms checks
-      threshold: -75,  // dB; lower (-70/-75) = more sensitive
+      interval: 100,
+      threshold: -75,
       play: false,
     });
     harkRef.current = harker;
@@ -168,115 +183,81 @@ export function useDebugRecorder({
       setAudioLevel(normalized);
     });
 
+    // Speaking state purely for UI now — auto triggers are disabled
     harker.on("speaking", () => {
-      clearTimers(); // cancel any pending silence from a previous segment
-      hadSpeechSinceRestartRef.current = true; // fresh speech observed
+      // hadSpeechSinceRestartRef.current = true; // [AUTO MODE]
       if (state !== "speaking") setState("speaking");
     });
 
     harker.on("stopped_speaking", () => {
-      // don’t arm while processing, and require fresh speech since restart
-      if (state === "processing") return;
-      if (!hadSpeechSinceRestartRef.current) return;
-
       if (state !== "listening") setState("listening");
 
-      // start visual countdown
-      setSilenceCountdown(Math.round(silenceDurationMs / 1000));
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = setInterval(() => {
-        setSilenceCountdown((s) => {
-          const next = Math.max(0, s - 1);
-          if (next === 0 && countdownIntervalRef.current) {
-            clearInterval(countdownIntervalRef.current);
-            countdownIntervalRef.current = null;
-          }
-          return next;
-        });
-      }, 1000);
-
-      // schedule auto-process
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => {
-        if (
-          hadSpeechSinceRestartRef.current &&
-          mediaRecorderRef.current?.state === "recording"
-        ) {
-          processNow();
-        }
-      }, silenceDurationMs);
+      // [AUTO MODE] Countdown + auto-process on silence (commented for static mode)
+      // setSilenceCountdown(Math.round(silenceDurationMs / 1000));
+      // if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      // countdownIntervalRef.current = setInterval(() => { ... }, 1000);
+      // if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      // silenceTimerRef.current = setTimeout(() => { processNow(); }, silenceDurationMs);
     });
 
-    // fresh cycle: require new speech
-    hadSpeechSinceRestartRef.current = false;
+    // hadSpeechSinceRestartRef.current = false; // [AUTO MODE]
     setSilenceCountdown(0);
     setState("listening");
-  }, [clearTimers, processNow, silenceDurationMs, startMediaRecorder, state]);
+  }, [silenceDurationMs, startMediaRecorder, state]);
 
-  const stopRecording = useCallback(() => {
-    // stop hark
-    if (harkRef.current) {
-      try { harkRef.current.stop(); } catch {}
-      harkRef.current = null;
-    }
-
-    // timers
-    clearTimers();
-    setSilenceCountdown(0);
-
-    // stop media recorder
-    const mr = mediaRecorderRef.current;
-    if (mr && mr.state !== "inactive") {
-      try { mr.stop(); } catch {}
-    }
-    mediaRecorderRef.current = null;
-
-    // stop tracks
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => { try { t.stop(); } catch {} });
-      streamRef.current = null;
-    }
-
-    setState("idle");
-  }, [clearTimers]);
-
-  const startAutoMode = useCallback(async () => {
-    setIsAutoMode(true);
+  // ---- Manual API ----
+  const startManual = useCallback(async () => {
     await startRecording();
   }, [startRecording]);
 
-  const stopAutoMode = useCallback(() => {
-    setIsAutoMode(false);
-    stopRecording();
-  }, [stopRecording]);
-
-  const toggleAutoMode = useCallback(async () => {
-    if (isAutoMode) stopAutoMode(); else await startAutoMode();
-  }, [isAutoMode, startAutoMode, stopAutoMode]);
-
-  const manualStop = useCallback(async () => {
-    if (isListening) await processNow();
+  const stopAndProcess = useCallback(async () => {
+    if (isListening) {
+      await processNow();
+    }
   }, [isListening, processNow]);
+
+  // Back-compat alias
+  const manualStop = stopAndProcess;
+
+  // ---- Auto API (kept for the future; not used now) ----
+  // const startAutoMode = useCallback(async () => {
+  //   setIsAutoMode(true);
+  //   await startRecording();
+  // }, [startRecording]);
+  // const stopAutoMode = useCallback(() => {
+  //   setIsAutoMode(false);
+  //   cleanupStream();
+  //   setState("idle");
+  // }, [cleanupStream]);
+  // const toggleAutoMode = useCallback(async () => {
+  //   if (isAutoMode) stopAutoMode(); else await startAutoMode();
+  // }, [isAutoMode, startAutoMode, stopAutoMode]);
 
   const clearError = useCallback(() => {
     setError(null);
     if (state === "error") setState("idle");
   }, [state]);
 
-  useEffect(() => () => stopRecording(), [stopRecording]);
+  // On unmount, clean up everything
+  useEffect(() => () => cleanupStream(), [cleanupStream]);
 
   return {
     state,
-    isAutoMode,
     isListening,
     isSpeaking,
     isProcessing,
     audioLevel,
-    silenceCountdown,
-    startAutoMode,
-    stopAutoMode,
-    toggleAutoMode,
+
+    startManual,
+    stopAndProcess,
     manualStop,
+
+    // isAutoMode,              // [AUTO MODE]
+    // silenceCountdown,        // [AUTO MODE]
+    // startAutoMode,           // [AUTO MODE]
+    // stopAutoMode,            // [AUTO MODE]
+    // toggleAutoMode,          // [AUTO MODE]
+
     error,
     clearError,
   };
