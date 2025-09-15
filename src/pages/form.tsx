@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/resizable";
 import IncidentForm from "@/components/form/incident-form";
 import ChatPanel from "@/components/chat/chat-panel";
+import { fillTemplateApi } from "@/services/fillTemplateApi";
 
 // ---------- types for generic fields ----------
 type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
@@ -19,41 +20,6 @@ type DynField = {
   options?: string[];
   placeholder?: string;
 };
-
-// ---------- helper: call /form/fill ----------
-async function fillTemplateApi(input: {
-  templateId: string;
-  // BACK-COMPAT: we still accept `transcript` (used if `newTranscript` is not provided)
-  transcript?: string;
-  // NEW: split transcripts
-  oldTranscript?: string;
-  newTranscript?: string;
-
-  fields: DynField[];
-  currentValues?: Record<string, { value: any; source?: "user" | "ai"; locked?: boolean }>;
-  options?: {
-    mode?: "incremental" | "fresh";
-    preserveUserEdits?: boolean;
-    fillOnlyEmpty?: boolean;
-    returnEvidence?: boolean;
-  };
-}) {
-  const res = await fetch("/api/v1/form/fill", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok || body?.success === false) {
-    throw new Error(body?.error || `HTTP ${res.status}`);
-  }
-  // backend now MAY return transcript: { old, new, combined }
-  return body.data as {
-    filled: Record<string, { value: any }>;
-    model: string;
-    transcript?: { old: string; new: string; combined: string };
-  };
-}
 
 // ---------- helper: map API filled -> plain patch ----------
 function filledToPatch(filled: Record<string, { value: any }>): Record<string, any> {

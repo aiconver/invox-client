@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import hark from "hark";
+import { uploadAndTranscribe } from "@/services/transcriptionApi";
 
 export type RecorderState = "idle" | "listening" | "speaking" | "processing" | "error";
 
@@ -86,42 +87,62 @@ export function useDebugRecorder({
   }, []);
 
   const processNow = useCallback(async () => {
-    clearTimers(); // prevent stale countdowns from firing mid-process
+  clearTimers();
 
-    const blob = await stopRecorderAndGetBlob();
-    if (!blob) {
-      setError("No recording data");
-      setState("error");
-      return;
+  const blob = await stopRecorderAndGetBlob();
+  if (!blob) {
+    setError("No recording data");
+    setState("error");
+    return;
+  }
+
+  // Keep your original ext logic if you prefer it over mimeToExt
+  const ext = blob.type.includes("webm") ? "webm" : "wav";
+  const filename = `rec-${Date.now()}.${ext}`;
+  const controller = new AbortController();
+
+  setState("processing");
+
+  try {
+    const { transcript } = await uploadAndTranscribe(blob, {
+      filename,
+      // Pass any extra fields you previously appended to FormData:
+      // fields: { language: currentLang, sessionId, isAutoMode },
+      onUploadProgress: (e) => {
+        // optional: show progress in UI
+        const pct = e.total ? Math.round((e.loaded / e.total) * 100) : undefined;
+      },
+      signal: controller.signal,
+      // baseUrl: process.env.NEXT_PUBLIC_API_BASE, // only if you really need to override
+    });
+
+    if (!transcript) throw new Error("No transcript");
+    onTranscript(transcript);
+
+    if (isAutoMode && streamRef.current) {
+      hadSpeechSinceRestartRef.current = false;
+      audioChunksRef.current = [];
+      startMediaRecorder(streamRef.current);
+      setSilenceCountdown(0);
+      setState("listening");
+    } else {
+      setState("idle");
     }
-    setState("processing");
-    try {
-      const ext = blob.type.includes("webm") ? "webm" : "wav";
-      const fd = new FormData();
-      fd.append("audio", blob, `rec-${Date.now()}.${ext}`);
-      const res = await fetch("/api/v1/form/transcribe", { method: "POST", body: fd });
-      if (!res.ok) throw new Error(String(res.status));
-      const data = await res.json();
-      const t = data?.data?.transcript ?? data?.transcript;
-      if (!t) throw new Error("No transcript");
-      onTranscript(t);
-
-      if (isAutoMode && streamRef.current) {
-        // re-arm: require new speech for next turn
-        hadSpeechSinceRestartRef.current = false;
-        audioChunksRef.current = [];
-        startMediaRecorder(streamRef.current);
-        setSilenceCountdown(0);
-        setState("listening");
-      } else {
-        setState("idle");
-      }
-    } catch (e: any) {
-      setError(e?.message || "Process failed");
-      setState("error");
+  } catch (e: any) {
+    if (e?.name === "CanceledError" || e?.message === "canceled") {
+      // optional: handle user-cancel differently
     }
-  }, [isAutoMode, onTranscript, startMediaRecorder, stopRecorderAndGetBlob, clearTimers]);
-
+    setError(e?.message || "Process failed");
+    setState("error");
+  } finally {
+  }
+}, [
+  isAutoMode,
+  onTranscript,
+  startMediaRecorder,
+  stopRecorderAndGetBlob,
+  clearTimers,
+]);
   const startRecording = useCallback(async () => {
     setError(null);
 

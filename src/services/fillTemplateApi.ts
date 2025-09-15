@@ -1,3 +1,5 @@
+import { apiClient } from "@/lib/axios";
+
 export type FilledField = {
   value: string | number | null;
   confidence?: number;
@@ -7,22 +9,51 @@ export type FilledField = {
   evidence?: { transcriptSnippet?: string; startChar?: number; endChar?: number };
 };
 
+type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
+
+export type DynField = {
+  id: string;
+  label: string;
+  type: DynFieldType;
+  required?: boolean;
+  options?: string[];
+  placeholder?: string;
+};
+
 export async function fillTemplateApi(input: {
   templateId: string;
-  transcript: string;
-  fields: { id: string; label: string; type: "text" | "textarea" | "date" | "number" | "enum"; required?: boolean; options?: string[] }[];
-  currentValues?: Record<string, { value: string | number | null; source?: "user" | "ai"; locked?: boolean }>;
-  options?: { mode?: "incremental" | "fresh"; preserveUserEdits?: boolean; fillOnlyEmpty?: boolean; returnEvidence?: boolean };
+  transcript?: string;         // back-compat
+  oldTranscript?: string;      // new
+  newTranscript?: string;      // new
+  fields: DynField[];
+  currentValues?: Record<
+    string,
+    { value: string | number | null; source?: "user" | "ai"; locked?: boolean }
+  >;
+  options?: {
+    mode?: "incremental" | "fresh";
+    preserveUserEdits?: boolean;
+    fillOnlyEmpty?: boolean;
+    returnEvidence?: boolean;
+  };
 }) {
-  const res = await fetch("/api/v1/form/fill", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
+  try {
+    const res = await apiClient.post("/api/v1/form/fill", input);
 
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok || body?.success === false) {
-    throw new Error(body?.error || `HTTP ${res.status}`);
+    if (!res.data || res.data.success === false) {
+      throw new Error(res.data?.error || "Unknown API error");
+    }
+
+    return res.data.data as {
+      filled: Record<string, FilledField>;
+      model: string;
+      transcript?: { old: string; new: string; combined: string };
+    };
+  } catch (err: any) {
+    const message =
+      err.response?.data?.error ||
+      err.message ||
+      "Request failed";
+    throw new Error(message);
   }
-  return body.data as { filled: Record<string, FilledField>; model: string };
 }
