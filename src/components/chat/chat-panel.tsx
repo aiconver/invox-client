@@ -17,9 +17,10 @@ type Message = {
   type: "assistant" | "user";
   content: React.ReactNode;
   timestamp: Date;
+  chatResponse?: string | null;
 };
 
-export default function DebugChatPanel({ onTranscript, missingFields, isFilling }: ChatPanelProps) {
+export default function DebugChatPanel({ onTranscript, missingFields, isFilling, chatResponse }: ChatPanelProps) {
   const [messages, setMessages] = React.useState<Message[]>([
     { id: "intro", type: "assistant", content: "Hi! Minimal voice capture.", timestamp: new Date() },
   ]);
@@ -47,6 +48,15 @@ export default function DebugChatPanel({ onTranscript, missingFields, isFilling 
       },
     ]);
   }, [missingFields]);
+
+  React.useEffect(() => {
+    if (!chatResponse) return;
+    setMessages(p => [
+      ...p,
+      { id: `cr-${Date.now()}`, type: "assistant", content: chatResponse, timestamp: new Date() },
+    ]);
+  }, [chatResponse]);
+
 
   const canStart = recorder.state === "idle" || recorder.state === "error";
   const canStopAndProcess = recorder.state === "listening" || recorder.state === "speaking";

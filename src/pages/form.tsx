@@ -52,6 +52,9 @@ export default function Invox() {
   // NEW: keep rolling combined transcript to send as "oldTranscript" on next turn
   const [combinedTranscript, setCombinedTranscript] = React.useState<string>("");
 
+  const [lastChatResponse, setLastChatResponse] = React.useState<string | null>(null);
+
+
   // ChatPanel -> transcript -> trigger fill
   const handleTranscript = async (newTranscriptText: string) => {
     try {
@@ -85,6 +88,8 @@ export default function Invox() {
       const nextPatch = filledToPatch(data.filled);
       setPatch(nextPatch);
 
+      setLastChatResponse(data.chatResponse ?? null);
+
       // Update rolling combined transcript from backend if available; else append locally
       const nextCombined =
         data.transcript?.combined ??
@@ -107,6 +112,7 @@ export default function Invox() {
             missingFields={missingFields}
             onTranscript={handleTranscript}
             isFilling={isFilling}
+            chatResponse={lastChatResponse}
           />
         </ResizablePanel>
 
@@ -116,10 +122,10 @@ export default function Invox() {
           <IncidentForm
             title="Incident Report"
             fields={FIELDS}
-            values={currentValues}      // initial/current values
-            patch={patch}               // AI patch merged on top inside form
+            values={currentValues}      
+            patch={patch}               
             onMissingFields={(ids) => setMissingFields(ids)}
-            onChange={(vals) => setCurrentValues(vals)} // keep parent in sync
+            onChange={(vals) => setCurrentValues(vals)} 
             onSubmit={(vals) => {
               console.log("submit:", vals);
             }}
