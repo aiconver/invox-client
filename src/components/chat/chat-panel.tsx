@@ -35,7 +35,7 @@ function TypewriterBubble({ text }: { text: string }) {
   return (
     <Typewriter
       options={{
-        delay: 50,           // chars per ~25ms
+        delay: 10,           // chars per ~25ms
         cursor: "",
         loop: false,
         deleteSpeed: Infinity,
