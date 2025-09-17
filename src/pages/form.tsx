@@ -19,6 +19,7 @@ type DynField = {
   required?: boolean;
   options?: string[];
   placeholder?: string;
+  description?: string;
 };
 
 // ---------- helper: map API filled -> plain patch ----------
@@ -31,14 +32,52 @@ function filledToPatch(filled: Record<string, { value: any }>): Record<string, a
 }
 
 export default function Invox() {
-  // generic template definition (swap this at runtime if you like)
+  
   const FIELDS: DynField[] = [
-    { id: "date", label: "Date of Report", type: "date", required: true },
-    { id: "reporterName", label: "Name of Reporting Person", type: "text", required: true },
-    { id: "title", label: "Title or Summary", type: "text" },
-    { id: "description", label: "Detailed Description", type: "textarea" },
-    { id: "affectedLine", label: "Affected Machine / Production Line", type: "text" },
-    { id: "correctiveAction", label: "Corrective Action Plan", type: "textarea" },
+    {
+      id: "date",
+      label: "Date of Report",
+      type: "date",
+      required: true,
+      description:
+        "Calendar date relevant to this incident in ISO format (YYYY-MM-DD) exactly as spoken in the NEW transcript. Do not reinterpret relative phrases like “today” or “yesterday”; only capture an explicit ISO date if one is stated."
+    },
+    {
+      id: "reporterName",
+      label: "Name of Reporting Person",
+      type: "text",
+      required: true,
+      description:
+        "Full name of the person filing the report as said in the NEW transcript. Use given + family name (keep diacritics). Omit titles, roles, emails, and extra words (e.g., not “I am”, not “Mr.”)."
+    },
+    {
+      id: "title",
+      label: "Title or Summary",
+      type: "text",
+      description:
+        "Short headline (≈ 3–8 words) that names the core problem. Noun phrase preferred (e.g., “Conveyor jam on line 5”). Avoid long sentences, timestamps, and action steps."
+    },
+    {
+      id: "description",
+      label: "Detailed Description",
+      type: "textarea",
+      description:
+        "2–3 concise sentences describing what happened, where, and impact/symptoms. Include concrete facts (signals, frequencies, locations). Do not include requests or solutions here—keep those for Corrective Action."
+    },
+    {
+      id: "affectedLine",
+      label: "Affected Machine / Production Line",
+      type: "text",
+      description:
+        "Exact machine or production line identified as having the issue (e.g., “5th production line”, “line 5”, “case erector”). If multiple lines are mentioned, choose the one explicitly described as problematic."
+    },
+    {
+      id: "correctiveAction",
+      label: "Corrective Action Plan",
+      type: "textarea",
+      description:
+        "Specific next step(s) requested or proposed to fix the issue, written as a single imperative sentence (e.g., “Replace the belt and recalibrate sensors”). No rationale, scheduling, or status—just the action(s)."
+    }
   ];
 
   // parent state
