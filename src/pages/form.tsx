@@ -80,6 +80,45 @@ export default function Invox() {
     }
   ];
 
+  const fewShots = [
+    {
+      "id": "ex1_all_fields",
+      "text": "2025-09-17. This is Alex Müller from QA. Conveyor jam on line five. The conveyor belt on the 5th production line keeps stopping every few minutes, causing a backlog at the metal detector. Replace the belt and recalibrate the speed sensors.",
+      "expected": {
+        "date": "2025-09-17",
+        "reporterName": "Alex Müller",
+        "title": "Conveyor jam on line five",
+        "description": "The conveyor belt on the 5th production line keeps stopping every few minutes, causing a backlog at the metal detector.",
+        "affectedLine": "5th production line",
+        "correctiveAction": "Replace the belt and recalibrate the speed sensors"
+      }
+    },
+    {
+      "id": "ex2_no_iso_date_choose_line5",
+      "text": "Hi, I'm Priya Shah. Packaging outage. Earlier, line 2 looked fine, but line 5 is collapsing cartons after sealing because the tape isn't adhering. Stop the line and replace the tape head, then retension.",
+      "expected": {
+        "date": null,
+        "reporterName": "Priya Shah",
+        "title": "Packaging outage",
+        "description": "Cartons collapse after sealing on line 5 because the tape is not adhering.",
+        "affectedLine": "5th production line",
+        "correctiveAction": "Stop the line and replace the tape head"
+      }
+    },
+    {
+      "id": "ex3_no_action_present",
+      "text": "2025-10-03. Ben here—case erector on the 5th production line is misfeeding; cartons jam every two minutes at the infeed. We noticed high vibration near the rollers.",
+      "expected": {
+        "date": "2025-10-03",
+        "reporterName": "Ben",
+        "title": "Case erector misfeed",
+        "description": "The case erector on the 5th production line misfeeds and cartons jam every two minutes at the infeed. Vibration near the rollers is high.",
+        "affectedLine": "5th production line",
+        "correctiveAction": null
+      }
+    }
+  ]
+
   // parent state
   const [patch, setPatch] = React.useState<Record<string, any> | null>(null);
   const [missingFields, setMissingFields] = React.useState<string[]>([]);
@@ -119,6 +158,7 @@ export default function Invox() {
         transcript: newTranscriptText || "", // optional, kept for BC with older backend
         fields: FIELDS,
         currentValues: current,
+        fewShots: fewShots,
         options: {
           mode: "incremental",
           preserveUserEdits: false,

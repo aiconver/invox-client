@@ -20,12 +20,19 @@ export type DynField = {
   placeholder?: string;
 };
 
+type FewShotExample = {
+  id: string;
+  text: string;
+  expected: Record<string, string | number | null>;
+};
+
 export async function fillTemplateApi(input: {
   templateId: string;
   transcript?: string;         // back-compat
   oldTranscript?: string;      // new
   newTranscript?: string;      // new
   fields: DynField[];
+  fewShots: FewShotExample[];
   currentValues?: Record<
     string,
     { value: string | number | null; source?: "user" | "ai"; locked?: boolean }
