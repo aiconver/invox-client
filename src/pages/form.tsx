@@ -135,6 +135,7 @@ export default function Invox() {
             onSubmit={(vals) => {
               console.log("submit:", vals);
             }}
+            processingState={processingState}
           />
         </ResizablePanel>
       </ResizablePanelGroup>

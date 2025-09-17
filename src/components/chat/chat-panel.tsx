@@ -5,6 +5,7 @@ import { AssistantMessage, UserMessage } from "./Bubbles";
 import { Button } from "@/components/ui/button";
 import { MdPlayArrow, MdStop /*, MdPause */ } from "react-icons/md";
 import { useDebugRecorder } from "./useRecorder";
+import Typewriter from "typewriter-effect";
 
 type ChatPanelProps = {
   missingFields: string[];
@@ -21,6 +22,33 @@ type Message = {
   timestamp: Date;
 };
 
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function TypewriterBubble({ text }: { text: string }) {
+  return (
+    <Typewriter
+      options={{
+        delay: 50,           // chars per ~25ms
+        cursor: "",
+        loop: false,
+        deleteSpeed: Infinity,
+      }}
+      onInit={(tw) => {
+        // Escape HTML and preserve newlines
+        const safe = escapeHtml(text).replace(/\n/g, "<br/>");
+        tw.typeString(safe).start();
+      }}
+    />
+  );
+}
+
 export default function DebugChatPanel({
   onTranscript,
   missingFields,
@@ -29,7 +57,18 @@ export default function DebugChatPanel({
   processingState,
 }: ChatPanelProps) {
   const [messages, setMessages] = React.useState<Message[]>([
-    { id: "intro", type: "assistant", content: <>Hi! Click <b>Start</b> to record, then <b>Stop &amp; Process</b>. You’ll see <i>Transcribing…</i> and <i>Filling…</i> while I work—then I’ll fill the form. Describe the incident in your own words.</>, timestamp: new Date() },
+    {
+      id: "intro",
+      type: "assistant",
+      content: (
+        <>
+          Hi! Click <b>Start</b> to record, then <b>Stop &amp; Process</b>. You’ll see{" "}
+          <i>Transcribing…</i> and <i>Filling…</i> while I work—then I’ll fill the form. Describe the
+          incident in your own words.
+        </>
+      ),
+      timestamp: new Date(),
+    },
   ]);
 
   // Refs to track temporary blinking placeholders so we can remove them later
@@ -94,18 +133,19 @@ export default function DebugChatPanel({
     }
   }, [processingState]);
 
-  // When chatResponse arrives, remove "Filling…" and append assistant summary
+  // When chatResponse arrives, remove "Filling…" and append assistant summary with typewriter effect
   React.useEffect(() => {
     if (!chatResponse) return;
     removeById(fillMsgIdRef.current);
     fillMsgIdRef.current = null;
 
+    const id = `cr-${Date.now()}`;
     setMessages((p) => [
       ...p,
       {
-        id: `cr-${Date.now()}`,
+        id,
         type: "assistant",
-        content: chatResponse,
+        content: <TypewriterBubble text={chatResponse} />,
         timestamp: new Date(),
       },
     ]);
@@ -118,7 +158,7 @@ export default function DebugChatPanel({
     <div className="flex h-[calc(100vh-150px)] min-h-0 flex-col overflow-hidden">
       <div className="flex-1 min-h-0 p-4">
         <ScrollArea className="h-full rounded-lg border bg-background">
-          <div className="p-4 min-h-full">
+          <div className="p-4 min-h-full" aria-live="polite">
             {messages.map((m) =>
               m.type === "assistant" ? (
                 <AssistantMessage key={m.id}>{m.content}</AssistantMessage>
