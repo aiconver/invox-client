@@ -51,6 +51,7 @@ export default function Invox() {
 
   // NEW: keep rolling combined transcript to send as "oldTranscript" on next turn
   const [combinedTranscript, setCombinedTranscript] = React.useState<string>("");
+  const [processingState, setProcessingState] = React.useState<string>("");
 
   const [lastChatResponse, setLastChatResponse] = React.useState<string | null>(null);
 
@@ -59,6 +60,7 @@ export default function Invox() {
   const handleTranscript = async (newTranscriptText: string) => {
     try {
       setIsFilling(true);
+      setProcessingState("transcribing")
 
       // shape currentValues for API (source: user)
       const current: Record<string, { value: any; source: "user" }> = {};
@@ -68,6 +70,7 @@ export default function Invox() {
       for (const f of FIELDS) {
         current[f.id] = { value: toNullIfEmpty(currentValues?.[f.id]), source: "user" };
       }
+      setProcessingState("filling")
 
       // Send split transcripts. For back-compat, we also include `transcript` (not required).
       const data = await fillTemplateApi({
@@ -95,6 +98,7 @@ export default function Invox() {
         data.transcript?.combined ??
         [combinedTranscript, newTranscriptText].filter(Boolean).join("\n");
       setCombinedTranscript(nextCombined);
+      setProcessingState("");
     } catch (e: any) {
       console.error("Fill failed:", e?.message || e);
     } finally {
@@ -113,6 +117,8 @@ export default function Invox() {
             onTranscript={handleTranscript}
             isFilling={isFilling}
             chatResponse={lastChatResponse}
+            processingState={processingState}
+            
           />
         </ResizablePanel>
 

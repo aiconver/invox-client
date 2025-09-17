@@ -10,6 +10,8 @@ type ChatPanelProps = {
   missingFields: string[];
   onTranscript: (transcript: string) => void;
   isFilling: boolean;
+  chatResponse?: string | null;
+  processingState?: string; 
 };
 
 type Message = {
@@ -17,16 +19,50 @@ type Message = {
   type: "assistant" | "user";
   content: React.ReactNode;
   timestamp: Date;
-  chatResponse?: string | null;
 };
 
-export default function DebugChatPanel({ onTranscript, missingFields, isFilling, chatResponse }: ChatPanelProps) {
+export default function DebugChatPanel({
+  onTranscript,
+  missingFields,
+  isFilling,
+  chatResponse,
+  processingState,
+}: ChatPanelProps) {
   const [messages, setMessages] = React.useState<Message[]>([
-    { id: "intro", type: "assistant", content: "Hi! Minimal voice capture.", timestamp: new Date() },
+    { id: "intro", type: "assistant", content: <>Hi! Click <b>Start</b> to record, then <b>Stop &amp; Process</b>. You’ll see <i>Transcribing…</i> and <i>Filling…</i> while I work—then I’ll fill the form. Describe the incident in your own words.</>, timestamp: new Date() },
   ]);
 
+  // Refs to track temporary blinking placeholders so we can remove them later
+  const transcribeMsgIdRef = React.useRef<string | null>(null);
+  const fillMsgIdRef = React.useRef<string | null>(null);
+
+  // Helpers to add/remove blinking assistant messages
+  const addBlink = (text: string) => {
+    const id = `${text}-${Date.now()}`;
+    setMessages((p) => [
+      ...p,
+      {
+        id,
+        type: "assistant",
+        content: <span className="animate-pulse">{text}</span>,
+        timestamp: new Date(),
+      },
+    ]);
+    return id;
+  };
+
+  const removeById = (id: string | null) => {
+    if (!id) return;
+    setMessages((p) => p.filter((m) => m.id !== id));
+  };
+
+  // Initialize recorder (must be before effects that use `recorder`)
   const recorder = useDebugRecorder({
     onTranscript: (t) => {
+      // Clear the "Transcribing…" placeholder as soon as transcript arrives
+      removeById(transcribeMsgIdRef.current);
+      transcribeMsgIdRef.current = null;
+
       setMessages((p) => [
         ...p,
         { id: `u-${Date.now()}`, type: "user", content: t, timestamp: new Date() },
@@ -36,27 +72,44 @@ export default function DebugChatPanel({ onTranscript, missingFields, isFilling,
     silenceDurationMs: 5000, // kept for future auto mode
   });
 
+  // Show/hide "Transcribing…" while the recorder is processing audio
   React.useEffect(() => {
-    if (!missingFields?.length) return;
+    if (recorder.state === "processing" && !transcribeMsgIdRef.current) {
+      transcribeMsgIdRef.current = addBlink("Transcribing…");
+    }
+    if (recorder.state !== "processing" && transcribeMsgIdRef.current) {
+      removeById(transcribeMsgIdRef.current);
+      transcribeMsgIdRef.current = null;
+    }
+  }, [recorder.state]);
+
+  // Show/hide "Filling…" while backend fill runs
+  React.useEffect(() => {
+    if (processingState === "filling" && !fillMsgIdRef.current) {
+      fillMsgIdRef.current = addBlink("Filling…");
+    }
+    if (processingState !== "filling" && fillMsgIdRef.current) {
+      removeById(fillMsgIdRef.current);
+      fillMsgIdRef.current = null;
+    }
+  }, [processingState]);
+
+  // When chatResponse arrives, remove "Filling…" and append assistant summary
+  React.useEffect(() => {
+    if (!chatResponse) return;
+    removeById(fillMsgIdRef.current);
+    fillMsgIdRef.current = null;
+
     setMessages((p) => [
       ...p,
       {
-        id: `m-${Date.now()}`,
+        id: `cr-${Date.now()}`,
         type: "assistant",
-        content: <>Missing: <strong>{missingFields.join(", ")}</strong></>,
+        content: chatResponse,
         timestamp: new Date(),
       },
     ]);
-  }, [missingFields]);
-
-  React.useEffect(() => {
-    if (!chatResponse) return;
-    setMessages(p => [
-      ...p,
-      { id: `cr-${Date.now()}`, type: "assistant", content: chatResponse, timestamp: new Date() },
-    ]);
   }, [chatResponse]);
-
 
   const canStart = recorder.state === "idle" || recorder.state === "error";
   const canStopAndProcess = recorder.state === "listening" || recorder.state === "speaking";
@@ -81,7 +134,6 @@ export default function DebugChatPanel({ onTranscript, missingFields, isFilling,
         <div className="p-4 flex items-center justify-between">
           <div className="text-sm">
             State: <b>{recorder.state}</b> · Audio: <b>{(recorder.audioLevel * 100).toFixed(1)}%</b>
-            {/* · Silence in: <b>{recorder.silenceCountdown}s</b>  // [AUTO MODE] keep for later */}
           </div>
           <div className="flex gap-3">
             <Button
@@ -100,18 +152,6 @@ export default function DebugChatPanel({ onTranscript, missingFields, isFilling,
             >
               <MdStop /> Stop &amp; Process
             </Button>
-
-            {/*
-            // [AUTO MODE] — kept for later use:
-            <Button
-              onClick={recorder.toggleAutoMode}
-              disabled={recorder.state === "processing"}
-              variant={recorder.isAutoMode ? "secondary" : "default"}
-              className="gap-2"
-            >
-              {recorder.isAutoMode ? (<><MdPause /> Stop Auto</>) : (<><MdPlayArrow /> Start Auto</>)}
-            </Button>
-            */}
           </div>
         </div>
 
