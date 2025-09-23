@@ -12,7 +12,9 @@ type ChatPanelProps = {
   onTranscript: (transcript: string) => void;
   isFilling: boolean;
   chatResponse?: string | null;
-  processingState?: string; 
+  processingState?: string;
+  selectedLang: string;
+  setSelectedLang: (lang: string) => void;
 };
 
 type Message = {
@@ -55,6 +57,8 @@ export default function DebugChatPanel({
   isFilling,
   chatResponse,
   processingState,
+  selectedLang,
+  setSelectedLang
 }: ChatPanelProps) {
   const [messages, setMessages] = React.useState<Message[]>([
     {
@@ -176,6 +180,14 @@ export default function DebugChatPanel({
             State: <b>{recorder.state}</b> · Audio: <b>{(recorder.audioLevel * 100).toFixed(1)}%</b>
           </div>
           <div className="flex gap-3">
+            <select
+              value={selectedLang}
+              onChange={(e) => setSelectedLang(e.target.value)}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="en">English</option>
+              <option value="de">German</option>
+            </select>
             <Button
               onClick={recorder.startManual}
               disabled={!canStart || recorder.isProcessing}

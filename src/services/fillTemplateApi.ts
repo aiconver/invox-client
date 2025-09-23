@@ -32,6 +32,7 @@ export async function fillTemplateApi(input: {
   oldTranscript?: string;      // new
   newTranscript?: string;      // new
   fields: DynField[];
+  lang: string;
   fewShots: FewShotExample[];
   currentValues?: Record<
     string,

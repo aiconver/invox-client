@@ -212,6 +212,7 @@ export default function Invox() {
   // NEW: keep rolling combined transcript to send as "oldTranscript" on next turn
   const [combinedTranscript, setCombinedTranscript] = React.useState<string>("");
   const [processingState, setProcessingState] = React.useState<string>("");
+  const [selectedLang, setSelectedLang] = React.useState<string>("en");
 
   const [lastChatResponse, setLastChatResponse] = React.useState<string | null>(null);
 
@@ -240,6 +241,7 @@ export default function Invox() {
         transcript: newTranscriptText || "", // optional, kept for BC with older backend
         fields: FIELDS,
         currentValues: current,
+        lang: selectedLang,
         fewShots: fewShots,
         options: {
           mode: "incremental",
@@ -279,6 +281,8 @@ export default function Invox() {
             isFilling={isFilling}
             chatResponse={lastChatResponse}
             processingState={processingState}
+            selectedLang={selectedLang}
+            setSelectedLang={setSelectedLang}
 
           />
         </ResizablePanel>
