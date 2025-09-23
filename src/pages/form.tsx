@@ -32,92 +32,174 @@ function filledToPatch(filled: Record<string, { value: any }>): Record<string, a
 }
 
 export default function Invox() {
-  
+
   const FIELDS: DynField[] = [
     {
       id: "date",
-      label: "Date of Report",
+      label: "Datum der Schichtübergabe",
       type: "date",
       required: true,
       description:
-        "Calendar date relevant to this incident in ISO format (YYYY-MM-DD) exactly as spoken in the NEW transcript. Do not reinterpret relative phrases like “today” or “yesterday”; only capture an explicit ISO date if one is stated."
+        "Kalenderdatum im ISO-Format (YYYY-MM-DD) der Übergabe."
     },
     {
-      id: "reporterName",
-      label: "Name of Reporting Person",
+      id: "shift",
+      label: "Schicht (Früh/Spät/Nacht)",
       type: "text",
       required: true,
       description:
-        "Full name of the person filing the report as said in the NEW transcript. Use given + family name (keep diacritics). Omit titles, roles, emails, and extra words (e.g., not “I am”, not “Mr.”)."
+        "Bitte genau „Frühschicht“, „Spätschicht“ oder „Nachtschicht“ eintragen."
     },
     {
-      id: "title",
-      label: "Title or Summary",
+      id: "reporterName",
+      label: "Schichtleiter/in (Name)",
       type: "text",
+      required: true,
       description:
-        "Short headline (≈ 3–8 words) that names the core problem. Noun phrase preferred (e.g., “Conveyor jam on line 5”). Avoid long sentences, timestamps, and action steps."
+        "Vor- und Nachname der übergebenden Person (ohne Titel/Funktion)."
     },
+
     {
-      id: "description",
-      label: "Detailed Description",
+      id: "statusAuftraege",
+      label: "Status der laufenden Aufträge/Projekte",
       type: "textarea",
       description:
-        "2–3 concise sentences describing what happened, where, and impact/symptoms. Include concrete facts (signals, frequencies, locations). Do not include requests or solutions here—keep those for Corrective Action."
+        "Kurz zu jedem relevanten Auftrag: Nummer, Bauteil/Anlage, Besonderheiten/Parameteränderungen und aktuelles Ergebnis. Beispiel: „580004 | Kokille H1056 – Rohre klemmen; Parameter XY angepasst; Ergebnis: 3 Min. länger laufen lassen.“"
     },
     {
-      id: "affectedLine",
-      label: "Affected Machine / Production Line",
-      type: "text",
-      description:
-        "Exact machine or production line identified as having the issue (e.g., “5th production line”, “line 5”, “case erector”). If multiple lines are mentioned, choose the one explicitly described as problematic."
-    },
-    {
-      id: "correctiveAction",
-      label: "Corrective Action Plan",
+      id: "wichtigeEreignisse",
+      label: "Wichtige Ereignisse während der Schicht",
       type: "textarea",
       description:
-        "Specific next step(s) requested or proposed to fix the issue, written as a single imperative sentence (e.g., “Replace the belt and recalibrate sensors”). No rationale, scheduling, or status—just the action(s)."
+        "Abweichungen, Störungen, Alarme, Mengen-/Gewichtsabweichungen, Eskalationen. Beispiel: „Terminalgewicht ≠ tatsächliches Gewicht im Schmelzkessel – bitte ansprechen.“"
+    },
+    {
+      id: "offeneAufgaben",
+      label: "Offene Aufgaben",
+      type: "textarea",
+      description:
+        "Ausstehende To-dos klar benennen; wenn möglich mit Verantwortlichem/Nachfasshinweis. Beispiel: „Kokille 6249 vor dem Abheben innen nachschleifen.“"
+    },
+    {
+      id: "maschinenSystemstatus",
+      label: "Maschinen-/Systemstatus",
+      type: "textarea",
+      description:
+        "Umbauten, Stillstände, Restlaufzeiten, Wartungen, bekannte Workarounds. Beispiel: „Umbau G160 um 15:00 Uhr fertig.“"
+    },
+    {
+      id: "besondereVorkommnisse",
+      label: "Besondere Vorkommnisse",
+      type: "textarea",
+      description:
+        "Beinahe-Unfälle, Qualitätsauffälligkeiten, Liefer-/Materialthemen, Behörden-/Kundenbesuche (kurz, faktenbasiert)."
+    },
+    {
+      id: "sicherheitshinweise",
+      label: "Sicherheitshinweise",
+      type: "textarea",
+      description:
+        "Gefährdungen, Absperrungen, defekte PSA, temporäre Maßnahmen. Beispiel: „Verletzungsgefahr am Kokillengestell (siehe Foto).“"
+    },
+    {
+      id: "rundgang",
+      label: "Rundgang | Sauberkeit & Ordnung",
+      type: "textarea",
+      description:
+        "5S/Ordnung & Sauberkeit, Leckagen, Stolperstellen, Materialablagen, Entsorgung – inkl. Bereich/Ort."
+    },
+    {
+      id: "leiterNotizen",
+      label: "Notizen Schichtleiter/in",
+      type: "textarea",
+      description:
+        "Sonstige Hinweise für die nachfolgende Schicht (kurz & prägnant)."
+    },
+    {
+      id: "fotoReferenzen",
+      label: "Foto-/Dokumentenreferenzen (optional)",
+      type: "text",
+      description:
+        "IDs oder Links zu Bildern/Dokumenten (z. B. DMS: „DOC-123, IMG-456“)."
     }
   ];
 
+
   const fewShots = [
     {
-      "id": "ex1_all_fields",
-      "text": "2025-09-17. This is Alex Müller from QA. Conveyor jam on line five. The conveyor belt on the 5th production line keeps stopping every few minutes, causing a backlog at the metal detector. Replace the belt and recalibrate the speed sensors.",
-      "expected": {
-        "date": "2025-09-17",
-        "reporterName": "Alex Müller",
-        "title": "Conveyor jam on line five",
-        "description": "The conveyor belt on the 5th production line keeps stopping every few minutes, causing a backlog at the metal detector.",
-        "affectedLine": "5th production line",
-        "correctiveAction": "Replace the belt and recalibrate the speed sensors"
+      id: "ex1_vollstaendig",
+      text:
+        "2025-09-23. Frühschicht. Hier ist Lena Schäfer. Auftrag 580004 — Kokille H1056: Rohre klemmen; Parameter XY um 0,3 erhöht; Ergebnis: drei Minuten länger laufen lassen. Ereignis: Terminalgewicht weicht vom realen Kesselgewicht ab, bitte ansprechen. Aufgabe: Kokille 6249 vor dem Abheben innen nachschleifen. Maschinen: Umbau G160 um 15:00 abgeschlossen; Linie 5 mit −20% Takt. Besonderes: Qualitätsauffälligkeit Charge 23-091 (Gratbildung). Sicherheit: Verletzungsgefahr am Kokillengestell, Absperrband angebracht. Rundgang: Leckage an Hydraulikpumpe Gießerei A; Durchgang freigeräumt. Fotos: IMG-123, DOC-77.",
+      expected: {
+        date: "2025-09-23",
+        shift: "Frühschicht",
+        reporterName: "Lena Schäfer",
+        statusAuftraege:
+          "580004 | Kokille H1056 – Rohre klemmen; Parameter XY +0,3; Ergebnis: 3 Min. länger laufen lassen.",
+        wichtigeEreignisse:
+          "Terminalgewicht weicht vom realen Kesselgewicht ab.",
+        offeneAufgaben:
+          "Kokille 6249 vor dem Abheben innen nachschleifen.",
+        maschinenSystemstatus:
+          "Umbau G160 um 15:00 abgeschlossen; Linie 5 mit −20% Takt.",
+        besondereVorkommnisse:
+          "Qualitätsauffälligkeit Charge 23-091 (Gratbildung).",
+        sicherheitshinweise:
+          "Verletzungsgefahr am Kokillengestell; Absperrband angebracht.",
+        rundgang:
+          "Leckage Hydraulikpumpe Gießerei A; Durchgang freigeräumt.",
+        leiterNotizen: null,
+        fotoReferenzen: "IMG-123, DOC-77"
       }
     },
     {
-      "id": "ex2_no_iso_date_choose_line5",
-      "text": "Hi, I'm Priya Shah. Packaging outage. Earlier, line 2 looked fine, but line 5 is collapsing cartons after sealing because the tape isn't adhering. Stop the line and replace the tape head, then retension.",
-      "expected": {
-        "date": null,
-        "reporterName": "Priya Shah",
-        "title": "Packaging outage",
-        "description": "Cartons collapse after sealing on line 5 because the tape is not adhering.",
-        "affectedLine": "5th production line",
-        "correctiveAction": "Stop the line and replace the tape head"
+      id: "ex2_ohne_datum_mit_sicherheit",
+      text:
+        "Spätschicht, Jonas Weber. Status: 580112 – Kleinserie; 580118 – Materialeingang verspätet. Ereignis: Förderschnecke in Gießerei B kurz blockiert, neu gestartet. Bitte morgen mit Einkauf zur Bandlieferung sprechen. Sicherheit: PSA-Kasten in Halle 1 leer. Fotos im DMS: DOC-99.",
+      expected: {
+        date: null,
+        shift: "Spätschicht",
+        reporterName: "Jonas Weber",
+        statusAuftraege:
+          "580112 – Kleinserie; 580118 – Materialeingang verspätet.",
+        wichtigeEreignisse:
+          "Förderschnecke in Gießerei B kurz blockiert; neu gestartet.",
+        offeneAufgaben:
+          "Mit Einkauf zur Bandlieferung sprechen.",
+        maschinenSystemstatus: null,
+        besondereVorkommnisse: null,
+        sicherheitshinweise:
+          "PSA-Kasten in Halle 1 leer.",
+        rundgang: null,
+        leiterNotizen: null,
+        fotoReferenzen: "DOC-99"
       }
     },
     {
-      "id": "ex3_no_action_present",
-      "text": "2025-10-03. Ben here—case erector on the 5th production line is misfeeding; cartons jam every two minutes at the infeed. We noticed high vibration near the rollers.",
-      "expected": {
-        "date": "2025-10-03",
-        "reporterName": "Ben",
-        "title": "Case erector misfeed",
-        "description": "The case erector on the 5th production line misfeeds and cartons jam every two minutes at the infeed. Vibration near the rollers is high.",
-        "affectedLine": "5th production line",
-        "correctiveAction": null
+      id: "ex3_nachtschicht_sensor_plc",
+      text:
+        "2025-09-22. Nachtschicht. Ich bin Özge Yıldız. Ereignis: Sensorfehler E-217 an der Abkühlstrecke, Alarm alle 30 Minuten. Maschinen: PLC der G160 neu gebootet; seither stabil. Rundgang: 5S – Werkbank E1 aufgeräumt, Shadowboard ergänzt. Notiz: Neue Kolleg:innen beim Rundgang mitnehmen.",
+      expected: {
+        date: "2025-09-22",
+        shift: "Nachtschicht",
+        reporterName: "Özge Yıldız",
+        statusAuftraege: null,
+        wichtigeEreignisse:
+          "Sensorfehler E-217 an der Abkühlstrecke; Alarme alle 30 Minuten.",
+        offeneAufgaben: null,
+        maschinenSystemstatus:
+          "PLC der G160 neu gebootet; seither stabil.",
+        besondereVorkommnisse: null,
+        sicherheitshinweise: null,
+        rundgang:
+          "Werkbank E1 aufgeräumt; Shadowboard ergänzt.",
+        leiterNotizen:
+          "Neue Kolleg:innen beim Rundgang mitnehmen.",
+        fotoReferenzen: null
       }
     }
-  ]
+  ];
+
 
   // parent state
   const [patch, setPatch] = React.useState<Record<string, any> | null>(null);
@@ -197,7 +279,7 @@ export default function Invox() {
             isFilling={isFilling}
             chatResponse={lastChatResponse}
             processingState={processingState}
-            
+
           />
         </ResizablePanel>
 
@@ -207,10 +289,10 @@ export default function Invox() {
           <IncidentForm
             title="Incident Report"
             fields={FIELDS}
-            values={currentValues}      
-            patch={patch}               
+            values={currentValues}
+            patch={patch}
             onMissingFields={(ids) => setMissingFields(ids)}
-            onChange={(vals) => setCurrentValues(vals)} 
+            onChange={(vals) => setCurrentValues(vals)}
             onSubmit={(vals) => {
               console.log("submit:", vals);
             }}
