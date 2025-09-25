@@ -2,10 +2,9 @@
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssistantMessage, UserMessage } from "./Bubbles";
-import { Button } from "@/components/ui/button";
-import { MdPlayArrow, MdStop } from "react-icons/md";
-import { useRecorder } from "./useRecorder"; // <-- updated hook
+import { useRecorder } from "../../hooks/use-recorder";
 import Typewriter from "typewriter-effect";
+import RecorderControls from "./recorder-controls";
 
 type ChatPanelProps = {
   onTranscript: (transcript: string) => void;
@@ -65,7 +64,7 @@ export default function ChatPanel({
     },
   ]);
 
-  // blinking placeholders (keep ids so we can remove them cleanly)
+  // placeholders for "Transcribing…" and "Filling…"
   const transcribeMsgIdRef = React.useRef<string | null>(null);
   const fillMsgIdRef = React.useRef<string | null>(null);
 
@@ -88,10 +87,9 @@ export default function ChatPanel({
     setMessages((p) => p.filter((m) => m.id !== id));
   };
 
-  // recorder (new simplified hook)
+  // recorder
   const recorder = useRecorder({
     onTranscript: (t) => {
-      // remove "Transcribing…" once transcript arrives
       removeById(transcribeMsgIdRef.current);
       transcribeMsgIdRef.current = null;
 
@@ -103,7 +101,7 @@ export default function ChatPanel({
     },
   });
 
-  // Show/hide "Transcribing…" based on processing state from hook
+  // blink: Transcribing…
   React.useEffect(() => {
     if (recorder.state === "processing" && !transcribeMsgIdRef.current) {
       transcribeMsgIdRef.current = addBlink("Transcribing…");
@@ -114,7 +112,7 @@ export default function ChatPanel({
     }
   }, [recorder.state]);
 
-  // Show/hide "Filling…" while backend fill runs (driven by parent)
+  // blink: Filling…
   React.useEffect(() => {
     if (processingState === "filling" && !fillMsgIdRef.current) {
       fillMsgIdRef.current = addBlink("Filling…");
@@ -125,7 +123,7 @@ export default function ChatPanel({
     }
   }, [processingState]);
 
-  // Append assistant summary when chatResponse arrives
+  // assistant summary
   React.useEffect(() => {
     if (!chatResponse) return;
     removeById(fillMsgIdRef.current);
@@ -141,9 +139,6 @@ export default function ChatPanel({
       },
     ]);
   }, [chatResponse]);
-
-  const canStart = recorder.state === "idle" || recorder.state === "error";
-  const canStopAndProcess = recorder.state === "recording";
 
   return (
     <div className="flex h-[calc(100vh-150px)] min-h-0 flex-col overflow-hidden">
@@ -161,46 +156,17 @@ export default function ChatPanel({
         </ScrollArea>
       </div>
 
-      <div className="border-t bg-background/95">
-        <div className="p-4 flex items-center justify-between">
-          <div className="text-sm">
-            State: <b>{recorder.state}</b> · Audio:{" "}
-            <b>{(recorder.audioLevel * 100).toFixed(1)}%</b>
-          </div>
-          <div className="flex gap-3 items-center">
-            <select
-              value={selectedLang}
-              onChange={(e) => setSelectedLang(e.target.value)}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="en">English</option>
-              <option value="de">German</option>
-            </select>
-
-            <Button onClick={recorder.start} disabled={!canStart || recorder.isProcessing} className="gap-2">
-              <MdPlayArrow /> Start
-            </Button>
-
-            <Button
-              onClick={recorder.stopAndProcess}
-              disabled={!canStopAndProcess}
-              variant="outline"
-              className="gap-2"
-            >
-              <MdStop /> Stop &amp; Process
-            </Button>
-          </div>
-        </div>
-
-        {recorder.error && (
-          <div className="px-4 pb-4">
-            <div className="text-red-600 text-sm">Error: {recorder.error}</div>
-            <Button onClick={recorder.clearError} variant="outline" size="sm" className="mt-2">
-              Dismiss
-            </Button>
-          </div>
-        )}
-      </div>
+      <RecorderControls
+        state={recorder.state}
+        audioLevel={recorder.audioLevel}
+        isProcessing={recorder.isProcessing}
+        error={recorder.error}
+        selectedLang={selectedLang}
+        setSelectedLang={setSelectedLang}
+        onStart={recorder.start}
+        onStopAndProcess={recorder.stopAndProcess}
+        onClearError={recorder.clearError}
+      />
     </div>
   );
 }
