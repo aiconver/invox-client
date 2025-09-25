@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import DownloadBar from "./download-bar";
 
 /** ---------- Types ---------- */
 export type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
@@ -282,17 +283,11 @@ export default function Form({
             </ScrollArea>
           </div>
 
-          <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="px-4 py-3 flex items-center justify-end">
-              <Button
-                type="submit"
-                form="invox-form"
-                className="bg-emerald-600 text-white hover:bg-emerald-700"
-              >
-                Submit Form
-              </Button>
-            </div>
-          </div>
+          <DownloadBar
+            title={title}
+            fields={fields.map(f => ({ id: f.id, label: f.label }))}
+            values={watchAll}
+          />
         </>
       ) : processingState === "transcribing" ? (
         <LoadingPanel label="Transcribing…" />
