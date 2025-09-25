@@ -6,9 +6,10 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import IncidentForm from "@/components/form/incident-form";
+import IncidentForm from "@/components/form/form";
 import ChatPanel from "@/components/chat/chat-panel";
 import { fillTemplate } from "@/services/form-service";
+import Form from "@/components/form/form";
 
 // ---------- types for generic fields ----------
 type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
@@ -287,8 +288,8 @@ export default function Invox() {
         <ResizableHandle withHandle />
 
         <ResizablePanel defaultSize={50} minSize={35}>
-          <IncidentForm
-            title="Incident Report"
+          <Form
+            title="Shift Handover Report"
             fields={FIELDS}
             values={currentValues}
             patch={patch}

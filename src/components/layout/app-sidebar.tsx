@@ -1,15 +1,3 @@
-import {
-	Sidebar,
-	SidebarContent,
-	SidebarFooter,
-	SidebarGroup,
-	SidebarGroupContent,
-	SidebarGroupLabel,
-	SidebarHeader,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
-} from "@/components/ui/sidebar";
 import { APP_ROUTES } from "@/lib/routes";
 import type { AppRoute } from "@/types/routes";
 import { useTranslation } from "react-i18next";
@@ -35,19 +23,16 @@ export function AppTopbar() {
 		return regex.test(fullPath);
 	};
 
-
 	return (
 		<header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 			<div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-3 px-3">
 				{/* Brand */}
-				<Link to={APP_ROUTES.form.to} className="flex items-center gap-2">
+				<Link to={APP_ROUTES.invox.to} className="flex items-center gap-2">
 					<img src="/logo.svg" alt="logo" className="size-8" />
 				</Link>
 
-
 				{/* Spacer */}
 				<div className="ml-auto" />
-
 
 				{/* User menu */}
 				<DropdownMenu>

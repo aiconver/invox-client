@@ -142,8 +142,8 @@ function LoadingPanel({ label }: { label: string }) {
 }
 
 /** ---------- Component ---------- */
-export default function IncidentForm({
-  title = "Incident Report",
+export default function Form({
+  title = "Report Overview",
   fields,
   values,
   patch,

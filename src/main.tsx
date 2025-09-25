@@ -12,7 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import Invox from "./pages/form.tsx";
+import Invox from "./pages/invox.tsx";
 import { NotFound } from "./pages/not-found.tsx";
 
 const rootElement = document.getElementById("root");
@@ -34,7 +34,7 @@ root.render(
 							<Routes>
 								<Route element={<ProtectedRoute />}>
 									<Route element={<MainLayout />}>
-										<Route path={APP_ROUTES["form"].to} element={<Invox />} />
+										<Route path={APP_ROUTES["invox"].to} element={<Invox />} />
 										{/* <Route path={APP_ROUTES["form"].to} element={<FormPage />} /> */}
 									</Route>
 								</Route>
