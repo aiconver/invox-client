@@ -8,8 +8,7 @@ import {
 } from "@/components/ui/resizable";
 import IncidentForm from "@/components/form/incident-form";
 import ChatPanel from "@/components/chat/chat-panel";
-import { fillTemplateApi } from "@/services/fillTemplateApi";
-import { transcribeAudio } from "@/services/transcribe-service";
+import { fillTemplate } from "@/services/form-service";
 
 // ---------- types for generic fields ----------
 type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
@@ -33,17 +32,6 @@ function filledToPatch(filled: Record<string, { value: any }>): Record<string, a
 }
 
 export default function Invox() {
-
-  const run = async () => {
-    try {
-      const transcribe = await transcribeAudio();
-      console.log(transcribe);
-    } catch (err) {
-      console.error("Transcription failed:", err);
-    }
-  };
-
-
   const FIELDS: DynField[] = [
     {
       id: "date",
@@ -245,7 +233,7 @@ export default function Invox() {
       setProcessingState("filling")
 
       // Send split transcripts. For back-compat, we also include `transcript` (not required).
-      const data = await fillTemplateApi({
+      const data = await fillTemplate({
         templateId: "tmpl_incident_v1",
         oldTranscript: combinedTranscript || "",
         newTranscript: newTranscriptText || "",
@@ -283,7 +271,6 @@ export default function Invox() {
   return (
     // Full-bleed area below a sticky topbar of height h-14
     <div className="fixed inset-x-0 top-14 bottom-0 bg-background">
-      <button onClick={run}>test</button>
       <ResizablePanelGroup direction="horizontal" className="h-full w-full">
         <ResizablePanel defaultSize={50} minSize={25} className="min-w-[280px]">
           {/* Chat sends transcript up; parent triggers fill */}

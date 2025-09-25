@@ -3,8 +3,8 @@ import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssistantMessage, UserMessage } from "./Bubbles";
 import { Button } from "@/components/ui/button";
-import { MdPlayArrow, MdStop /*, MdPause */ } from "react-icons/md";
-import { useDebugRecorder } from "./useRecorder";
+import { MdPlayArrow, MdStop } from "react-icons/md";
+import { useRecorder } from "./useRecorder"; // <-- updated hook
 import Typewriter from "typewriter-effect";
 
 type ChatPanelProps = {
@@ -12,7 +12,7 @@ type ChatPanelProps = {
   onTranscript: (transcript: string) => void;
   isFilling: boolean;
   chatResponse?: string | null;
-  processingState?: string;
+  processingState?: string; // "filling" to show the blink
   selectedLang: string;
   setSelectedLang: (lang: string) => void;
 };
@@ -36,14 +36,8 @@ function escapeHtml(s: string) {
 function TypewriterBubble({ text }: { text: string }) {
   return (
     <Typewriter
-      options={{
-        delay: 10,           // chars per ~25ms
-        cursor: "",
-        loop: false,
-        deleteSpeed: Infinity,
-      }}
+      options={{ delay: 10, cursor: "", loop: false, deleteSpeed: Infinity }}
       onInit={(tw) => {
-        // Escape HTML and preserve newlines
         const safe = escapeHtml(text).replace(/\n/g, "<br/>");
         tw.typeString(safe).start();
       }}
@@ -58,7 +52,7 @@ export default function DebugChatPanel({
   chatResponse,
   processingState,
   selectedLang,
-  setSelectedLang
+  setSelectedLang,
 }: ChatPanelProps) {
   const [messages, setMessages] = React.useState<Message[]>([
     {
@@ -75,11 +69,10 @@ export default function DebugChatPanel({
     },
   ]);
 
-  // Refs to track temporary blinking placeholders so we can remove them later
+  // blinking placeholders (keep ids so we can remove them cleanly)
   const transcribeMsgIdRef = React.useRef<string | null>(null);
   const fillMsgIdRef = React.useRef<string | null>(null);
 
-  // Helpers to add/remove blinking assistant messages
   const addBlink = (text: string) => {
     const id = `${text}-${Date.now()}`;
     setMessages((p) => [
@@ -99,10 +92,10 @@ export default function DebugChatPanel({
     setMessages((p) => p.filter((m) => m.id !== id));
   };
 
-  // Initialize recorder (must be before effects that use `recorder`)
-  const recorder = useDebugRecorder({
+  // recorder (new simplified hook)
+  const recorder = useRecorder({
     onTranscript: (t) => {
-      // Clear the "Transcribing…" placeholder as soon as transcript arrives
+      // remove "Transcribing…" once transcript arrives
       removeById(transcribeMsgIdRef.current);
       transcribeMsgIdRef.current = null;
 
@@ -112,10 +105,9 @@ export default function DebugChatPanel({
       ]);
       onTranscript(t);
     },
-    silenceDurationMs: 5000, // kept for future auto mode
   });
 
-  // Show/hide "Transcribing…" while the recorder is processing audio
+  // Show/hide "Transcribing…" based on processing state from hook
   React.useEffect(() => {
     if (recorder.state === "processing" && !transcribeMsgIdRef.current) {
       transcribeMsgIdRef.current = addBlink("Transcribing…");
@@ -126,7 +118,7 @@ export default function DebugChatPanel({
     }
   }, [recorder.state]);
 
-  // Show/hide "Filling…" while backend fill runs
+  // Show/hide "Filling…" while backend fill runs (driven by parent)
   React.useEffect(() => {
     if (processingState === "filling" && !fillMsgIdRef.current) {
       fillMsgIdRef.current = addBlink("Filling…");
@@ -137,17 +129,16 @@ export default function DebugChatPanel({
     }
   }, [processingState]);
 
-  // When chatResponse arrives, remove "Filling…" and append assistant summary with typewriter effect
+  // Append assistant summary when chatResponse arrives
   React.useEffect(() => {
     if (!chatResponse) return;
     removeById(fillMsgIdRef.current);
     fillMsgIdRef.current = null;
 
-    const id = `cr-${Date.now()}`;
     setMessages((p) => [
       ...p,
       {
-        id,
+        id: `cr-${Date.now()}`,
         type: "assistant",
         content: <TypewriterBubble text={chatResponse} />,
         timestamp: new Date(),
@@ -156,7 +147,7 @@ export default function DebugChatPanel({
   }, [chatResponse]);
 
   const canStart = recorder.state === "idle" || recorder.state === "error";
-  const canStopAndProcess = recorder.state === "listening" || recorder.state === "speaking";
+  const canStopAndProcess = recorder.state === "recording";
 
   return (
     <div className="flex h-[calc(100vh-150px)] min-h-0 flex-col overflow-hidden">
@@ -177,9 +168,10 @@ export default function DebugChatPanel({
       <div className="border-t bg-background/95">
         <div className="p-4 flex items-center justify-between">
           <div className="text-sm">
-            State: <b>{recorder.state}</b> · Audio: <b>{(recorder.audioLevel * 100).toFixed(1)}%</b>
+            State: <b>{recorder.state}</b> · Audio:{" "}
+            <b>{(recorder.audioLevel * 100).toFixed(1)}%</b>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <select
               value={selectedLang}
               onChange={(e) => setSelectedLang(e.target.value)}
@@ -188,11 +180,8 @@ export default function DebugChatPanel({
               <option value="en">English</option>
               <option value="de">German</option>
             </select>
-            <Button
-              onClick={recorder.startManual}
-              disabled={!canStart || recorder.isProcessing}
-              className="gap-2"
-            >
+
+            <Button onClick={recorder.start} disabled={!canStart || recorder.isProcessing} className="gap-2">
               <MdPlayArrow /> Start
             </Button>
 
