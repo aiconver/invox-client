@@ -275,9 +275,7 @@ export default function Invox() {
         <ResizablePanel defaultSize={50} minSize={25} className="min-w-[280px]">
           {/* Chat sends transcript up; parent triggers fill */}
           <ChatPanel
-            missingFields={missingFields}
             onTranscript={handleTranscript}
-            isFilling={isFilling}
             chatResponse={lastChatResponse}
             processingState={processingState}
             selectedLang={selectedLang}

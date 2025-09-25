@@ -8,9 +8,7 @@ import { useRecorder } from "./useRecorder"; // <-- updated hook
 import Typewriter from "typewriter-effect";
 
 type ChatPanelProps = {
-  missingFields: string[];
   onTranscript: (transcript: string) => void;
-  isFilling: boolean;
   chatResponse?: string | null;
   processingState?: string; // "filling" to show the blink
   selectedLang: string;
@@ -45,10 +43,8 @@ function TypewriterBubble({ text }: { text: string }) {
   );
 }
 
-export default function DebugChatPanel({
+export default function ChatPanel({
   onTranscript,
-  missingFields,
-  isFilling,
   chatResponse,
   processingState,
   selectedLang,
