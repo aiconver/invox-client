@@ -6,7 +6,6 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import IncidentForm from "@/components/form/form";
 import ChatPanel from "@/components/chat/chat-panel";
 import { fillTemplate } from "@/services/form-service";
 import Form from "@/components/form/form";
@@ -34,172 +33,46 @@ function filledToPatch(filled: Record<string, { value: any }>): Record<string, a
 
 export default function Invox() {
   const FIELDS: DynField[] = [
-    {
-      id: "date",
-      label: "Datum der Schichtübergabe",
-      type: "date",
-      required: true,
-      description:
-        "Kalenderdatum im ISO-Format (YYYY-MM-DD) der Übergabe."
-    },
-    {
-      id: "shift",
-      label: "Schicht (Früh/Spät/Nacht)",
-      type: "text",
-      required: true,
-      description:
-        "Bitte genau „Frühschicht“, „Spätschicht“ oder „Nachtschicht“ eintragen."
-    },
-    {
-      id: "reporterName",
-      label: "Schichtleiter/in (Name)",
-      type: "text",
-      required: true,
-      description:
-        "Vor- und Nachname der übergebenden Person (ohne Titel/Funktion)."
-    },
-
-    {
-      id: "statusAuftraege",
-      label: "Status der laufenden Aufträge/Projekte",
-      type: "textarea",
-      description:
-        "Kurz zu jedem relevanten Auftrag: Nummer, Bauteil/Anlage, Besonderheiten/Parameteränderungen und aktuelles Ergebnis. Beispiel: „580004 | Kokille H1056 – Rohre klemmen; Parameter XY angepasst; Ergebnis: 3 Min. länger laufen lassen.“"
-    },
-    {
-      id: "wichtigeEreignisse",
-      label: "Wichtige Ereignisse während der Schicht",
-      type: "textarea",
-      description:
-        "Abweichungen, Störungen, Alarme, Mengen-/Gewichtsabweichungen, Eskalationen. Beispiel: „Terminalgewicht ≠ tatsächliches Gewicht im Schmelzkessel – bitte ansprechen.“"
-    },
-    {
-      id: "offeneAufgaben",
-      label: "Offene Aufgaben",
-      type: "textarea",
-      description:
-        "Ausstehende To-dos klar benennen; wenn möglich mit Verantwortlichem/Nachfasshinweis. Beispiel: „Kokille 6249 vor dem Abheben innen nachschleifen.“"
-    },
-    {
-      id: "maschinenSystemstatus",
-      label: "Maschinen-/Systemstatus",
-      type: "textarea",
-      description:
-        "Umbauten, Stillstände, Restlaufzeiten, Wartungen, bekannte Workarounds. Beispiel: „Umbau G160 um 15:00 Uhr fertig.“"
-    },
-    {
-      id: "besondereVorkommnisse",
-      label: "Besondere Vorkommnisse",
-      type: "textarea",
-      description:
-        "Beinahe-Unfälle, Qualitätsauffälligkeiten, Liefer-/Materialthemen, Behörden-/Kundenbesuche (kurz, faktenbasiert)."
-    },
-    {
-      id: "sicherheitshinweise",
-      label: "Sicherheitshinweise",
-      type: "textarea",
-      description:
-        "Gefährdungen, Absperrungen, defekte PSA, temporäre Maßnahmen. Beispiel: „Verletzungsgefahr am Kokillengestell (siehe Foto).“"
-    },
-    {
-      id: "rundgang",
-      label: "Rundgang | Sauberkeit & Ordnung",
-      type: "textarea",
-      description:
-        "5S/Ordnung & Sauberkeit, Leckagen, Stolperstellen, Materialablagen, Entsorgung – inkl. Bereich/Ort."
-    },
-    {
-      id: "leiterNotizen",
-      label: "Notizen Schichtleiter/in",
-      type: "textarea",
-      description:
-        "Sonstige Hinweise für die nachfolgende Schicht (kurz & prägnant)."
-    },
-    {
-      id: "fotoReferenzen",
-      label: "Foto-/Dokumentenreferenzen (optional)",
-      type: "text",
-      description:
-        "IDs oder Links zu Bildern/Dokumenten (z. B. DMS: „DOC-123, IMG-456“)."
-    }
-  ];
-
-
-  const fewShots = [
-    {
-      id: "ex1_vollstaendig",
-      text:
-        "2025-09-23. Frühschicht. Hier ist Lena Schäfer. Auftrag 580004 — Kokille H1056: Rohre klemmen; Parameter XY um 0,3 erhöht; Ergebnis: drei Minuten länger laufen lassen. Ereignis: Terminalgewicht weicht vom realen Kesselgewicht ab, bitte ansprechen. Aufgabe: Kokille 6249 vor dem Abheben innen nachschleifen. Maschinen: Umbau G160 um 15:00 abgeschlossen; Linie 5 mit −20% Takt. Besonderes: Qualitätsauffälligkeit Charge 23-091 (Gratbildung). Sicherheit: Verletzungsgefahr am Kokillengestell, Absperrband angebracht. Rundgang: Leckage an Hydraulikpumpe Gießerei A; Durchgang freigeräumt. Fotos: IMG-123, DOC-77.",
-      expected: {
-        date: "2025-09-23",
-        shift: "Frühschicht",
-        reporterName: "Lena Schäfer",
-        statusAuftraege:
-          "580004 | Kokille H1056 – Rohre klemmen; Parameter XY +0,3; Ergebnis: 3 Min. länger laufen lassen.",
-        wichtigeEreignisse:
-          "Terminalgewicht weicht vom realen Kesselgewicht ab.",
-        offeneAufgaben:
-          "Kokille 6249 vor dem Abheben innen nachschleifen.",
-        maschinenSystemstatus:
-          "Umbau G160 um 15:00 abgeschlossen; Linie 5 mit −20% Takt.",
-        besondereVorkommnisse:
-          "Qualitätsauffälligkeit Charge 23-091 (Gratbildung).",
-        sicherheitshinweise:
-          "Verletzungsgefahr am Kokillengestell; Absperrband angebracht.",
-        rundgang:
-          "Leckage Hydraulikpumpe Gießerei A; Durchgang freigeräumt.",
-        leiterNotizen: null,
-        fotoReferenzen: "IMG-123, DOC-77"
-      }
-    },
-    {
-      id: "ex2_ohne_datum_mit_sicherheit",
-      text:
-        "Spätschicht, Jonas Weber. Status: 580112 – Kleinserie; 580118 – Materialeingang verspätet. Ereignis: Förderschnecke in Gießerei B kurz blockiert, neu gestartet. Bitte morgen mit Einkauf zur Bandlieferung sprechen. Sicherheit: PSA-Kasten in Halle 1 leer. Fotos im DMS: DOC-99.",
-      expected: {
-        date: null,
-        shift: "Spätschicht",
-        reporterName: "Jonas Weber",
-        statusAuftraege:
-          "580112 – Kleinserie; 580118 – Materialeingang verspätet.",
-        wichtigeEreignisse:
-          "Förderschnecke in Gießerei B kurz blockiert; neu gestartet.",
-        offeneAufgaben:
-          "Mit Einkauf zur Bandlieferung sprechen.",
-        maschinenSystemstatus: null,
-        besondereVorkommnisse: null,
-        sicherheitshinweise:
-          "PSA-Kasten in Halle 1 leer.",
-        rundgang: null,
-        leiterNotizen: null,
-        fotoReferenzen: "DOC-99"
-      }
-    },
-    {
-      id: "ex3_nachtschicht_sensor_plc",
-      text:
-        "2025-09-22. Nachtschicht. Ich bin Özge Yıldız. Ereignis: Sensorfehler E-217 an der Abkühlstrecke, Alarm alle 30 Minuten. Maschinen: PLC der G160 neu gebootet; seither stabil. Rundgang: 5S – Werkbank E1 aufgeräumt, Shadowboard ergänzt. Notiz: Neue Kolleg:innen beim Rundgang mitnehmen.",
-      expected: {
-        date: "2025-09-22",
-        shift: "Nachtschicht",
-        reporterName: "Özge Yıldız",
-        statusAuftraege: null,
-        wichtigeEreignisse:
-          "Sensorfehler E-217 an der Abkühlstrecke; Alarme alle 30 Minuten.",
-        offeneAufgaben: null,
-        maschinenSystemstatus:
-          "PLC der G160 neu gebootet; seither stabil.",
-        besondereVorkommnisse: null,
-        sicherheitshinweise: null,
-        rundgang:
-          "Werkbank E1 aufgeräumt; Shadowboard ergänzt.",
-        leiterNotizen:
-          "Neue Kolleg:innen beim Rundgang mitnehmen.",
-        fotoReferenzen: null
-      }
-    }
-  ];
-
+  {
+    "id": "incident_type",
+    "label": "Incident Type",
+    "type": "enum",
+    "required": true,
+    "options": ["ATTACK", "BOMBING", "KIDNAPPING", "ASSASSINATION", "ARSON", "HIJACKING", "OTHER"],
+    "description": "Select exactly one category that best summarizes the event. Use domain intuition to pick the primary act (not every sub-act). • BOMBING: use when an explosive device detonated (IED, grenade, car bomb, mine, etc.). • ARSON: deliberate setting of fire without an explicit explosive device. • ASSASSINATION: targeted killing of a specific individual (political, military, civic). • KIDNAPPING: abduction, hostage-taking, detention by perpetrators. • HIJACKING: seizure of a vehicle/aircraft/vessel. • ATTACK: general armed attack (shooting, shelling, ambush, clashes) that doesn’t clearly fit the above. • OTHER: clearly violent incident that fits none of the categories. If multiple acts occur, choose the **most salient** one (e.g., bomb detonation during a broader clash → BOMBING). Keep the value exactly as one of the options (UPPERCASE)."
+  },
+  {
+    "id": "PerpInd",
+    "label": "Perpetrator Individuals",
+    "type": "textarea",
+    "description": "List the **individual people** suspected of, responsible for, or claiming the incident. Use one item per person, separated by commas. Use canonical personal names: “First Last” (e.g., \"Juan Pérez\"). Keep original diacritics and capitalization. **Do include** known aliases in parentheses if mentioned (e.g., \"Roberto d’Aubuisson (alias Roberto)\") only when helpful for disambiguation. **Do not include** titles/ranks (Col., Gen.), roles (Minister), or organizations here; those belong in PerpOrg. If only a role is given without a name (e.g., \"an army captain\"), leave this field empty. If perpetrators are unknown or only described as a crowd/mob, leave empty. Examples: \"Ignacio X.\", \"John Doe\"."
+  },
+  {
+    "id": "PerpOrg",
+    "label": "Perpetrator Organizations",
+    "type": "textarea",
+    "description": "List the **organizations or groups** suspected of, responsible for, or claiming the incident. Separate multiple entries with commas. Use the group’s canonical short name if present (e.g., \"FMLN\", \"ERP\"). Normalize dotted acronyms to plain uppercase (e.g., \"F.M.L.N.\" → \"FMLN\"). If there is **competing attribution** (e.g., police blame Group A; Group B denies), include all named groups mentioned. If a subgroup is specified, use the most specific label given (e.g., \"FMLN – Radio Venceremos\" → \"FMLN\"). Do **not** list state forces unless they are explicitly acting as perpetrators (e.g., death squads tied to security forces). If perpetrators are unknown or only described generically (\"guerrillas\", \"paramilitaries\" without a name), leave empty."
+  },
+  {
+    "id": "Target",
+    "label": "Target",
+    "type": "textarea",
+    "description": "List the **intended target(s)** of the attack—people, institutions, facilities, or assets the perpetrators aimed at. Separate multiple entries with commas. Use concise, specific noun phrases: e.g., \"UCA campus\", \"Power lines\", \"National Guard convoy\", \"U.S. Embassy\", \"Treasury Police outpost\", \"Electrical substation\", \"Bus carrying soldiers\". **Do not** put victim names here (those go to Victim). **Do not** put weapons or methods here. If unclear whether an object was targeted or incidental, omit it. Prefer concrete entities over broad areas (\"San Miguel\" is too broad unless the city itself was the target)."
+  },
+  {
+    "id": "Victim",
+    "label": "Victim",
+    "type": "textarea",
+    "description": "List those **harmed, killed, or directly threatened**. Separate with commas. Accept both **individual names** (\"Ignacio Ellacuría\") and **category labels** when names aren’t given (\"Civilians\", \"Jesuit priests\", \"University student\", \"National Guard soldiers\"). Include role descriptors when they uniquely identify the victim group (\"UCA director\", \"UCA human rights institute director\"). **Do not** list organizations here unless the organization itself suffered as a corporate entity (those belong in Target). Avoid duplicates (e.g., if both \"Priests\" and specific priest names are present, keep the most informative items). If no victims are reported, leave empty."
+  },
+  {
+    "id": "Weapon",
+    "label": "Weapon",
+    "type": "textarea",
+    "description": "List the **weapons or methods** used. Separate multiple entries with commas. Use clear, generic names unless a specific model is given. Examples: \"Bomb\", \"Grenade\", \"RPG-7\", \"AK-47\", \"Firearms\", \"Explosive device\", \"Land mine\", \"Arson\", \"Molotov cocktail\". Prefer the **specific model** when explicitly stated (\"RPG-7\" rather than \"Rocket launcher\"). If the account only mentions effects (\"explosion\", \"blast\") without naming the device, use \"Explosive device\". **Do not** include places, targets, or perpetrator names here. If unknown, leave empty."
+  }
+]
+;
 
   // parent state
   const [patch, setPatch] = React.useState<Record<string, any> | null>(null);
@@ -242,7 +115,6 @@ export default function Invox() {
         fields: FIELDS,
         currentValues: current,
         lang: selectedLang,
-        fewShots: fewShots,
         options: {
           mode: "incremental",
           preserveUserEdits: false,

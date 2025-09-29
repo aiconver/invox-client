@@ -40,7 +40,6 @@ export type FillTemplateInput = {
   newTranscript?: string;
   fields: DynField[];
   lang: string;
-  fewShots?: FewShotExample[] | string;
   currentValues?: Record<
     string,
     { value: string | number | null; source?: "user" | "ai"; locked?: boolean }
