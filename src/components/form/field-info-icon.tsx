@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
-import type { FieldMetadata } from "./types";
+import { FieldMetadata } from "@/types/form";
 
 export default function FieldInfoIcon({
   fieldId,
@@ -16,7 +16,7 @@ export default function FieldInfoIcon({
 }) {
   if (!metadata || !hasValue) return null;
 
-  const { confidence, source, evidence, changed } = metadata;
+  const { confidence, source, evidence, changed, reason } = metadata;
   if (confidence === undefined && !source) return null;
 
   const confidenceDot = (conf?: number) => {
@@ -33,6 +33,11 @@ export default function FieldInfoIcon({
     return "Low";
   };
 
+  const sourceChip =
+    source === "ai"
+      ? "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-blue-600 text-white dark:bg-blue-500"
+      : "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-violet-600 text-white dark:bg-violet-500";
+
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>
@@ -46,30 +51,21 @@ export default function FieldInfoIcon({
           </button>
         </TooltipTrigger>
 
-        {/* Force accessible surface + text via design tokens */}
         <TooltipContent
           side="right"
           align="end"
-          className="max-w-xs bg-popover text-popover-foreground border border-border shadow-md"
+          className="max-w-xs bg-popover text-popover-foreground border border-border shadow-md rounded-md"
         >
-          <div className="space-y-2 text-xs">
+          <div className="space-y-2 text-xs leading-relaxed">
             {/* Source */}
             {source && (
               <div className="flex items-center gap-2">
                 <span className="font-semibold">Source:</span>
-                <span
-                  className={
-                    source === "ai"
-                      ? "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-blue-600 text-white dark:bg-blue-500"
-                      : "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-violet-600 text-white dark:bg-violet-500"
-                  }
-                >
-                  {source === "ai" ? "AI Generated" : "User Input"}
-                </span>
+                <span className={sourceChip}>{source === "ai" ? "AI Generated" : "User Input"}</span>
               </div>
             )}
 
-            {/* Confidence (use colored dot; keep text in foreground) */}
+            {/* Confidence */}
             {confidence !== undefined && (
               <div className="flex items-center gap-2">
                 <span className="font-semibold">Confidence:</span>
@@ -79,6 +75,23 @@ export default function FieldInfoIcon({
                     {confidenceLabel(confidence)} ({Math.round(confidence * 100)}%)
                   </span>
                 </span>
+              </div>
+            )}
+
+            {/* Contradiction */}
+            {reason?.type === "CONTRADICTED" && (
+              <div className="pt-2 mt-2 border-t border-border space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">Issue:</span>
+                  <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] bg-destructive text-destructive-foreground">
+                    Contradicted
+                  </span>
+                </div>
+                {reason.message && (
+                  <div className="opacity-80 italic break-words">
+                    “{reason.message}”
+                  </div>
+                )}
               </div>
             )}
 
@@ -94,9 +107,11 @@ export default function FieldInfoIcon({
 
             {/* Evidence */}
             {evidence?.transcriptSnippet && (
-              <div className="pt-1 mt-2 border-t border-border">
+              <div className="pt-2 mt-2 border-t border-border">
                 <div className="font-semibold mb-1">Evidence:</div>
-                <div className="opacity-80 italic">"{evidence.transcriptSnippet}"</div>
+                <div className="opacity-80 italic whitespace-pre-wrap break-words">
+                  “{evidence.transcriptSnippet}”
+                </div>
               </div>
             )}
           </div>

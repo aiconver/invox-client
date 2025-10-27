@@ -6,6 +6,10 @@ export type FilledField = {
   previousValue?: string | number | null;
   source: "ai" | "user";
   evidence?: { transcriptSnippet?: string; startChar?: number; endChar?: number };
+  reason?: {
+    type: "CONTRADICTED";
+    message: string;
+  };
 };
 
 export type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
@@ -54,7 +58,13 @@ export type FillTemplateInput = {
 };
 
 export type FillTemplateResult = {
+  chatResponse: null;
   filled: Record<string, FilledField>;
   model: string;
   transcript?: { old: string; new: string; combined: string };
 };
+
+export type FieldMetadata = Pick<
+  FilledField,
+  "source" | "confidence" | "changed" | "evidence" | "reason"
+>;

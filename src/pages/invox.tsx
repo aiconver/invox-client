@@ -213,6 +213,7 @@ Beispiel:
         source: fieldData.source,
         changed: fieldData.changed,
         evidence: fieldData.evidence,
+        reason: fieldData.reason,
       };
     });
       const nextPatch = filledToPatch(data.filled);
