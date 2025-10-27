@@ -99,6 +99,7 @@ export default function ChatPanel({
       ]);
       onTranscript(t);
     },
+    lang: selectedLang,
   });
 
   // blink: Transcribing…

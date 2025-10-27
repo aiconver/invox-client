@@ -12,6 +12,7 @@ import type {
 export async function transcribeAudio(options: {
   blob: Blob | File;
   filename?: string;
+  lang?: string;
 }): Promise<TranscribeResult> {
   const { blob, filename } = options;
   const base64 = await blobToBase64NoPrefix(blob);
@@ -21,6 +22,7 @@ export async function transcribeAudio(options: {
 
   const res = await client.main.api.v1.form.transcribe.mutate({
     file: { originalname, mimetype, base64 },
+    lang: options.lang,
   });
 
   if (!res || (res as any).success === false) {

@@ -6,6 +6,7 @@ export type RecorderState = "idle" | "recording" | "processing" | "error";
 
 export interface UseRecorderProps {
   onTranscript: (t: string) => void;
+  lang?: string;
 }
 
 export interface UseRecorderResult {
@@ -19,7 +20,7 @@ export interface UseRecorderResult {
   clearError: () => void;
 }
 
-export function useRecorder({ onTranscript }: UseRecorderProps): UseRecorderResult {
+export function useRecorder({ onTranscript, lang }: UseRecorderProps): UseRecorderResult {
   const [state, setState] = useState<RecorderState>("idle");
   const [audioLevel, setAudioLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +106,7 @@ export function useRecorder({ onTranscript }: UseRecorderProps): UseRecorderResu
       const blob = await stopRecorderAndGetBlob();
       if (!blob) throw new Error("No recording data");
 
-      const { transcript } = await transcribeAudio({ blob });
+      const { transcript } = await transcribeAudio({ blob, lang });
       if (!transcript) throw new Error("No transcript");
 
       onTranscript(transcript);
