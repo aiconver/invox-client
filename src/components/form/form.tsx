@@ -152,6 +152,16 @@ export default function Form({
                     currentValue !== undefined &&
                     currentValue !== "";  // Check if it's filled
 
+                  const lowConfidence =
+                    hasValue && typeof fieldMeta?.confidence === "number" && fieldMeta.confidence < 0.8;
+
+                  // prefer error styling over low-confidence
+                  const dangerClass = err
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : lowConfidence
+                      ? "border-rose-500 ring-1 ring-rose-500 focus-visible:ring-rose-500"
+                      : "";
+
                   return (
                     <div className="grid gap-1.5 min-w-0" key={f.id}>
                       <Label className="text-sm" htmlFor={inputId}>
@@ -164,7 +174,7 @@ export default function Form({
                         <Textarea
                           id={inputId}
                           placeholder={f.placeholder}
-                          className="min-h-24"
+                           className={`min-h-24 ${dangerClass}`}
                           aria-required={!!f.required}
                           aria-invalid={!!err}
                           {...form.register(f.id)}
@@ -172,7 +182,7 @@ export default function Form({
                       ) : f.type === "enum" ? (
                         <select
                           id={inputId}
-                          className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none"
+                          className={`h-9 w-full rounded-md border bg-background px-3 text-sm outline-none ${dangerClass}`}
                           defaultValue={(defaults[f.id] ?? "") as any}
                           aria-required={!!f.required}
                           aria-invalid={!!err}
@@ -194,7 +204,7 @@ export default function Form({
                           aria-required={!!f.required}
                           aria-invalid={!!err}
                           {...form.register(f.id)}
-                          className={err ? "border-destructive" : ""}
+                          className={dangerClass}
                         />
                       ) : f.type === "number" ? (
                         <Input
@@ -215,7 +225,7 @@ export default function Form({
                           aria-required={!!f.required}
                           aria-invalid={!!err}
                           {...form.register(f.id)}
-                          className={err ? "border-destructive" : ""}
+                          className={dangerClass}
                         />
                       )}
 
