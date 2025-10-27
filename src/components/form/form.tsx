@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DownloadBar from "./download-bar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { Info } from "lucide-react";
 
 /** ---------- Types ---------- */
 export type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
@@ -28,6 +30,7 @@ export type DynField = {
 type DynamicFormProps = {
   title?: string;
   fields: DynField[];
+  metadata?: Record<string, any>;
   values?: Record<string, any>;
   patch?: Record<string, any> | null;
   onMissingFields?: (missing: string[]) => void;
@@ -142,12 +145,105 @@ function LoadingPanel({ label }: { label: string }) {
   );
 }
 
+/** ---------- Info Icon Component ---------- */
+function FieldInfoIcon({ 
+  fieldId, 
+  metadata 
+}: { 
+  fieldId: string; 
+  metadata?: FieldMetadata;
+}) {
+  if (!metadata) return null;
+
+  const { confidence, source, evidence, changed } = metadata;
+  
+  // Don't show icon if no meaningful metadata
+  if (confidence === undefined && !source) return null;
+
+  // Color based on confidence
+  const getConfidenceColor = (conf?: number) => {
+    if (conf === undefined) return "text-muted-foreground";
+    if (conf >= 0.8) return "text-green-600";
+    if (conf >= 0.5) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const getConfidenceLabel = (conf?: number) => {
+    if (conf === undefined) return "Unknown";
+    if (conf >= 0.8) return "High";
+    if (conf >= 0.5) return "Medium";
+    return "Low";
+  };
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className={`ml-1.5 inline-flex ${getConfidenceColor(confidence)} hover:opacity-70 transition-opacity`}
+            aria-label={`Information for ${fieldId}`}
+          >
+            <Info className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent 
+          side="right" 
+          align="start"
+          className="max-w-xs"
+        >
+          <div className="space-y-2 text-xs">
+            {/* Source */}
+            {source && (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Source:</span>
+                <span className={source === "ai" ? "text-blue-500" : "text-purple-500"}>
+                  {source === "ai" ? "AI Generated" : "User Input"}
+                </span>
+              </div>
+            )}
+
+            {/* Confidence */}
+            {confidence !== undefined && (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Confidence:</span>
+                <span className={getConfidenceColor(confidence)}>
+                  {getConfidenceLabel(confidence)} ({Math.round(confidence * 100)}%)
+                </span>
+              </div>
+            )}
+
+            {/* Changed indicator */}
+            {changed && (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Status:</span>
+                <span className="text-orange-500">Recently updated</span>
+              </div>
+            )}
+
+            {/* Evidence snippet */}
+            {evidence?.transcriptSnippet && (
+              <div className="pt-1 mt-2 border-t border-border">
+                <div className="font-semibold mb-1">Evidence:</div>
+                <div className="text-muted-foreground italic">
+                  "{evidence.transcriptSnippet}"
+                </div>
+              </div>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 /** ---------- Component ---------- */
 export default function Form({
   title = "Report Overview",
   fields,
   values,
   patch,
+  metadata,
   onMissingFields,
   onSubmit,
   onChange,
@@ -207,10 +303,14 @@ export default function Form({
                   const err = (form.formState.errors as any)[f.id]?.message as string | undefined;
                   const inputId = `fld-${f.id}`;
 
+                  const fieldMeta = metadata?.[f.id];
+
                   return (
                     <div className="grid gap-1.5 min-w-0" key={f.id}>
                       <Label className="text-sm" htmlFor={inputId}>
                         {f.label} {f.required && <span className="text-destructive">*</span>}
+                        {/* 🆕 Info icon */}
+                        <FieldInfoIcon fieldId={f.id} metadata={fieldMeta} />
                       </Label>
 
                       {f.type === "textarea" ? (

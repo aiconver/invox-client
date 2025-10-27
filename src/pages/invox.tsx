@@ -9,6 +9,7 @@ import {
 import ChatPanel from "@/components/chat/chat-panel";
 import { fillTemplate } from "@/services/form-service";
 import Form from "@/components/form/form";
+import { useState } from "react";
 
 // ---------- types for generic fields ----------
 type DynFieldType = "text" | "textarea" | "date" | "number" | "enum";
@@ -163,6 +164,7 @@ Beispiel:
   const [selectedLang, setSelectedLang] = React.useState<string>("en");
 
   const [lastChatResponse, setLastChatResponse] = React.useState<string | null>(null);
+  const [metadata, setMetadata] = useState({});
 
 
   // ChatPanel -> transcript -> trigger fill
@@ -198,6 +200,21 @@ Beispiel:
         },
       });
 
+      // Extract values and metadata from the response
+    const newValues: Record<string, any> = {};
+    const newMetadata: Record<string, any> = {};
+
+       Object.entries(data.filled).forEach(([fieldId, fieldData]: [string, any]) => {
+      newValues[fieldId] = fieldData.value;
+      
+      // Build metadata object for each field
+      newMetadata[fieldId] = {
+        confidence: fieldData.confidence,
+        source: fieldData.source,
+        changed: fieldData.changed,
+        evidence: fieldData.evidence,
+      };
+    });
       const nextPatch = filledToPatch(data.filled);
       setPatch(nextPatch);
 
@@ -209,6 +226,8 @@ Beispiel:
         [combinedTranscript, newTranscriptText].filter(Boolean).join("\n");
       setCombinedTranscript(nextCombined);
       setProcessingState("");
+
+      setMetadata(newMetadata);
     } catch (e: any) {
       console.error("Fill failed:", e?.message || e);
     } finally {
@@ -245,6 +264,7 @@ Beispiel:
             onSubmit={(vals) => {
               console.log("submit:", vals);
             }}
+            metadata={metadata}
             processingState={processingState}
           />
         </ResizablePanel>
