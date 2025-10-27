@@ -33,45 +33,121 @@ function filledToPatch(filled: Record<string, { value: any }>): Record<string, a
 
 export default function Invox() {
   const FIELDS: DynField[] = [
-  {
-    "id": "incident_type",
-    "label": "Incident Type",
-    "type": "enum",
-    "required": true,
-    "options": ["ATTACK", "BOMBING", "KIDNAPPING", "ASSASSINATION", "ARSON", "HIJACKING", "OTHER"],
-    "description": "Select exactly one category that best summarizes the event. Use domain intuition to pick the primary act (not every sub-act). • BOMBING: use when an explosive device detonated (IED, grenade, car bomb, mine, etc.). • ARSON: deliberate setting of fire without an explicit explosive device. • ASSASSINATION: targeted killing of a specific individual (political, military, civic). • KIDNAPPING: abduction, hostage-taking, detention by perpetrators. • HIJACKING: seizure of a vehicle/aircraft/vessel. • ATTACK: general armed attack (shooting, shelling, ambush, clashes) that doesn’t clearly fit the above. • OTHER: clearly violent incident that fits none of the categories. If multiple acts occur, choose the **most salient** one (e.g., bomb detonation during a broader clash → BOMBING). Keep the value exactly as one of the options (UPPERCASE)."
-  },
-  {
-    "id": "PerpInd",
-    "label": "Perpetrator Individuals",
-    "type": "textarea",
-    "description": "List the **individual people** suspected of, responsible for, or claiming the incident. Use one item per person, separated by commas. Use canonical personal names: “First Last” (e.g., \"Juan Pérez\"). Keep original diacritics and capitalization. **Do include** known aliases in parentheses if mentioned (e.g., \"Roberto d’Aubuisson (alias Roberto)\") only when helpful for disambiguation. **Do not include** titles/ranks (Col., Gen.), roles (Minister), or organizations here; those belong in PerpOrg. If only a role is given without a name (e.g., \"an army captain\"), leave this field empty. If perpetrators are unknown or only described as a crowd/mob, leave empty. Examples: \"Ignacio X.\", \"John Doe\"."
-  },
-  {
-    "id": "PerpOrg",
-    "label": "Perpetrator Organizations",
-    "type": "textarea",
-    "description": "List the **organizations or groups** suspected of, responsible for, or claiming the incident. Separate multiple entries with commas. Use the group’s canonical short name if present (e.g., \"FMLN\", \"ERP\"). Normalize dotted acronyms to plain uppercase (e.g., \"F.M.L.N.\" → \"FMLN\"). If there is **competing attribution** (e.g., police blame Group A; Group B denies), include all named groups mentioned. If a subgroup is specified, use the most specific label given (e.g., \"FMLN – Radio Venceremos\" → \"FMLN\"). Do **not** list state forces unless they are explicitly acting as perpetrators (e.g., death squads tied to security forces). If perpetrators are unknown or only described generically (\"guerrillas\", \"paramilitaries\" without a name), leave empty."
-  },
-  {
-    "id": "Target",
-    "label": "Target",
-    "type": "textarea",
-    "description": "List the **intended target(s)** of the attack—people, institutions, facilities, or assets the perpetrators aimed at. Separate multiple entries with commas. Use concise, specific noun phrases: e.g., \"UCA campus\", \"Power lines\", \"National Guard convoy\", \"U.S. Embassy\", \"Treasury Police outpost\", \"Electrical substation\", \"Bus carrying soldiers\". **Do not** put victim names here (those go to Victim). **Do not** put weapons or methods here. If unclear whether an object was targeted or incidental, omit it. Prefer concrete entities over broad areas (\"San Miguel\" is too broad unless the city itself was the target)."
-  },
-  {
-    "id": "Victim",
-    "label": "Victim",
-    "type": "textarea",
-    "description": "List those **harmed, killed, or directly threatened**. Separate with commas. Accept both **individual names** (\"Ignacio Ellacuría\") and **category labels** when names aren’t given (\"Civilians\", \"Jesuit priests\", \"University student\", \"National Guard soldiers\"). Include role descriptors when they uniquely identify the victim group (\"UCA director\", \"UCA human rights institute director\"). **Do not** list organizations here unless the organization itself suffered as a corporate entity (those belong in Target). Avoid duplicates (e.g., if both \"Priests\" and specific priest names are present, keep the most informative items). If no victims are reported, leave empty."
-  },
-  {
-    "id": "Weapon",
-    "label": "Weapon",
-    "type": "textarea",
-    "description": "List the **weapons or methods** used. Separate multiple entries with commas. Use clear, generic names unless a specific model is given. Examples: \"Bomb\", \"Grenade\", \"RPG-7\", \"AK-47\", \"Firearms\", \"Explosive device\", \"Land mine\", \"Arson\", \"Molotov cocktail\". Prefer the **specific model** when explicitly stated (\"RPG-7\" rather than \"Rocket launcher\"). If the account only mentions effects (\"explosion\", \"blast\") without naming the device, use \"Explosive device\". **Do not** include places, targets, or perpetrator names here. If unknown, leave empty."
-  }
-];
+    {
+      id: "date",
+      label: "Datum",
+      type: "date",
+      required: true,
+      description: `Datum der Schicht im Format JJJJ-MM-TT (z. B. 2025-10-27). 
+- Tragen Sie das tatsächliche Kalenderdatum der dokumentierten Schicht ein. 
+- Bei Nachtschichten, die über Mitternacht gehen, bitte das Startdatum der Schicht verwenden.`
+    },
+    {
+      id: "shift_leader",
+      label: "Schichtleiter",
+      type: "text",
+      required: true,
+      description: `Vollständiger Name der verantwortlichen Schichtleitung. 
+- Format: Vorname Nachname (z. B. „Alex Müller“). 
+- Optional: Kürzel in Klammern (z. B. „Alex Müller (AM)“). 
+- Bei Übergabe bitte zusätzlich Vertreter notieren: „Alex Müller; Vertretung: Pat Schmidt“.`
+    },
+    {
+      id: "shift",
+      label: "Schicht",
+      type: "enum",
+      required: true,
+      options: ["FRÜHSCHICHT", "SPÄTSCHICHT", "NACHTSCHICHT"],
+      description: `Wählen Sie die passende Schicht:
+- FRÜHSCHICHT: typ. 06:00–14:00
+- SPÄTSCHICHT: typ. 14:00–22:00
+- NACHTSCHICHT: typ. 22:00–06:00
+(Zeiten dienen als Richtwert; bei abweichenden Modellen bitte die intern gültigen Zeiten nutzen.)`
+    },
+    {
+      id: "order_status",
+      label: "Status der laufenden Aufträge/Projekte",
+      type: "textarea",
+      description: `Kurz und präzise pro Auftrag/Projekt (Stichpunkte). Für jeden Eintrag:
+- Kennung/Bezeichnung (z. B. „AO-1842 – Kunde XY“)
+- aktueller Fortschritt in % oder Meilenstein (z. B. „Montage 80 % abgeschlossen“)
+- heutige Aktivitäten & Ergebnisse (mit Uhrzeit, falls relevant)
+- Abweichungen/Verzögerungen (Ursache, Auswirkung)
+- nächste Schritte + Verantwortliche + Fälligkeitsdatum
+Beispiel:
+• AO-1842 – Kunde XY: Montage 80 %; 10:30 Dichtigkeitsprüfung ok; Verzögerung wegen fehlender Dichtungen (Lieferung 28.10.); Nächster Schritt: Endprüfung (M. König) bis 29.10.`
+    },
+    {
+      id: "important_events",
+      label: "Wichtige Ereignisse während der Schicht",
+      type: "textarea",
+      description: `Listenform mit Zeitstempel. Arten von Ereignissen: Kundenbesuche, Audits, Besprechungen, Lieferungen, Eskalationen.
+Für jeden Eintrag angeben:
+- Zeitpunkt (HH:MM)
+- Ereignisart + kurze Beschreibung
+- Beteiligte/Ansprechpartner
+- Ergebnis/Entscheidung
+- offene Punkte/Follow-ups (mit Verantwortlichen & Termin)
+Beispiel:
+• 09:15 – Lieferverzug (Spedition ABC); Eintreffzeit neu 13:00; Folge: Linie 2 Stand 30 min; Follow-up: Wareneingang priorisieren (L. Weber).`
+    },
+    {
+      id: "open_tasks",
+      label: "Offene Aufgaben",
+      type: "textarea",
+      description: `Alle Aufgaben, die an die nächste Schicht übergeben werden. Pro Aufgabe bitte angeben:
+- Aufgabe (klar formuliert, verifizierbar)
+- Priorität: Hoch/Mittel/Niedrig
+- Verantwortlich (Rolle/Name)
+- Fällig bis (Datum/Uhrzeit)
+- Abhängigkeiten/Risiken
+Beispiel:
+• Prüflehre kalibrieren – Priorität: Hoch – Verantwortlich: QS (T. Hahn) – Fällig: 28.10. 08:00 – Abhängigkeit: Labor frei.`
+    },
+    {
+      id: "machine_system_status",
+      label: "Maschinen-/Systemstatus",
+      type: "textarea",
+      description: `Übersicht pro Maschine/System. Für jeden Eintrag:
+- ID/Bezeichnung (z. B. „Linie 2 – Presswerk“)
+- Status: OK / Eingeschränkt / Ausfall
+- Laufzeit/Stillstandsdauer (mit Zeiten)
+- Störungscode/Fehlerbild (falls vorhanden)
+- durchgeführte Maßnahmen/Wartung
+- benötigte Teile/Service-Tickets (Nr. angeben)
+- Auswirkungen auf Produktion/Qualität
+Beispiel:
+• Linie 2 – Presswerk: Eingeschränkt; 07:40–08:25 Werkzeugwechsel; 11:10 Störung E37 (Sensor); Reset + Reinigung; Ticket #SR-5123 offen; Output -5 %.`
+    },
+    {
+      id: "special_incidents",
+      label: "Besondere Vorkommnisse",
+      type: "textarea",
+      description: `Außergewöhnliche Ereignisse außerhalb der Standardkategorien (z. B. Unfälle/Beinaheunfälle, Sicherheitsstopps, IT-Ausfälle, ungewöhnliche Qualitätsabweichungen).
+Für jeden Eintrag:
+- Zeitpunkt & Ort/Bereich
+- kurze Beschreibung (Fakten, keine Schuldzuweisung)
+- Sofortmaßnahmen
+- Meldungen/Nummern (z. B. Unfallmeldung, CAPA, Ticket)
+- nächste Schritte/Beobachtung
+Beispiel:
+• 12:05 – Lagerzone B: Beinaheunfall durch nassen Boden; Bereich abgesperrt, Reinigung veranlasst; Meldung #HSE-2025-103; Monitoring 24 h.`
+    },
+    {
+      id: "safety_notes",
+      label: "Sicherheitshinweise",
+      type: "textarea",
+      description: `Konkrete Hinweise für die nächste Schicht zur sicheren Arbeitsdurchführung.
+Bitte angeben:
+- Gefahrenstelle/Risiko (Ort, Maschine, Prozess)
+- erforderliche Schutzmaßnahmen (PPE, Sperrung, Freigabeprozesse)
+- temporäre Änderungen (z. B. reduzierte Geschwindigkeit, Umleitung)
+- Prüfpunkte vor Schichtbeginn
+- Ansprechpartner bei Fragen/Notfällen
+Beispiel:
+• Gabelstaplerverkehr in Gang C erhöht – Wege markieren, Warnweste Pflicht, max. 6 km/h; vor Start: Hupentest; Ansprechpartner: Schichtleitung Logistics (Tel. 1234).`
+    }
+  ];
 
   // parent state
   const [patch, setPatch] = React.useState<Record<string, any> | null>(null);
