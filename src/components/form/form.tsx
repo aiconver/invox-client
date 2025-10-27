@@ -146,17 +146,22 @@ function LoadingPanel({ label }: { label: string }) {
 }
 
 /** ---------- Info Icon Component ---------- */
-function FieldInfoIcon({ 
-  fieldId, 
-  metadata 
-}: { 
-  fieldId: string; 
+function FieldInfoIcon({
+  fieldId,
+  metadata,
+  hasValue,
+}: {
+  fieldId: string;
   metadata?: FieldMetadata;
+  hasValue: boolean;
 }) {
   if (!metadata) return null;
 
   const { confidence, source, evidence, changed } = metadata;
-  
+
+  // Don't show icon if field has no value (null/empty)
+  if (!hasValue) return null;
+
   // Don't show icon if no meaningful metadata
   if (confidence === undefined && !source) return null;
 
@@ -187,9 +192,9 @@ function FieldInfoIcon({
             <Info className="h-3.5 w-3.5" />
           </button>
         </TooltipTrigger>
-        <TooltipContent 
-          side="right" 
-          align="start"
+        <TooltipContent
+          side="right"
+          align="end"
           className="max-w-xs"
         >
           <div className="space-y-2 text-xs">
@@ -304,13 +309,17 @@ export default function Form({
                   const inputId = `fld-${f.id}`;
 
                   const fieldMeta = metadata?.[f.id];
+                  const currentValue = watchAll[f.id];  // Get the current form value
+                  const hasValue = currentValue !== null &&
+                    currentValue !== undefined &&
+                    currentValue !== "";  // Check if it's filled
 
                   return (
                     <div className="grid gap-1.5 min-w-0" key={f.id}>
                       <Label className="text-sm" htmlFor={inputId}>
                         {f.label} {f.required && <span className="text-destructive">*</span>}
                         {/* 🆕 Info icon */}
-                        <FieldInfoIcon fieldId={f.id} metadata={fieldMeta} />
+                        <FieldInfoIcon fieldId={f.id} metadata={fieldMeta} hasValue={hasValue} />
                       </Label>
 
                       {f.type === "textarea" ? (
