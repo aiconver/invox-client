@@ -141,7 +141,7 @@ export default function ChatPanel({
   }, [chatResponse]);
 
   return (
-    <div className="flex h-[calc(100vh-150px)] min-h-0 flex-col overflow-hidden">
+    <div className="flex h-[calc(100vh-60px)] min-h-0 flex-col overflow-hidden">
       <div className="flex-1 min-h-0 p-4">
         <ScrollArea className="h-full rounded-lg border bg-background">
           <div className="p-4 min-h-full" aria-live="polite">
