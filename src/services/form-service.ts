@@ -33,7 +33,7 @@ export async function transcribeAudio(options: {
 
 /** Fill a template via tRPC. */
 export async function fillTemplate(input: FillTemplateInput): Promise<FillTemplateResult> {
-  const res = await client.main.api.v1.form.fill.mutate(input);
+  const res = await client.main.api.v1.form.fill.query(input);
 
   if (!res || (res as any).success === false) {
     throw new Error((res as any)?.error || "Fill template failed");
