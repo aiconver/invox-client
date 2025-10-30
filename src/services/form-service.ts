@@ -1,4 +1,4 @@
-"use client";
+
 
 import { client } from "@/lib/trpc";
 import { blobToBase64NoPrefix, extFromMime } from "@/utils/file";

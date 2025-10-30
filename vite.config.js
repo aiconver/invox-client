@@ -5,7 +5,7 @@ import path from "node:path";
 export default defineConfig({
     plugins: [react()],
     base: "/",
-    resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
+    resolve: { alias: { "@": path.resolve(__dirname, "src") } },
     server: {
         host: true, // important in Docker (bind 0.0.0.0)
         port: 4201,
@@ -14,8 +14,6 @@ export default defineConfig({
         hmr: {
             host: "localhost", // the host your BROWSER reaches (nginx publishes 4201 on localhost)
             port: 4201, // the port your browser uses
-            // if you hit via HTTPS/443 through a reverse proxy, use: clientPort: 443
-            // clientPort: 443,
         },
     },
 });

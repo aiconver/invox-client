@@ -1,4 +1,4 @@
-"use client";
+
 
 import * as React from "react";
 import { useMemo } from "react";
@@ -153,7 +153,7 @@ export default function Form({
                     currentValue !== "";  // Check if it's filled
 
                   const lowConfidence =
-                    hasValue && fieldMeta.source == "ai" && typeof fieldMeta?.confidence === "number" && fieldMeta.confidence < 0.8;
+                    hasValue && fieldMeta.source == "ai" && typeof fieldMeta?.confidence === "number" && fieldMeta.confidence < 0.85;
 
                   // prefer error styling over low-confidence
                   const dangerClass = err

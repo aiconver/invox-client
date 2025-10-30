@@ -1,5 +1,5 @@
 // src/components/form/DownloadBar.tsx
-"use client";
+
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import jsPDF from "jspdf";

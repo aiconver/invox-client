@@ -10,7 +10,7 @@ const TIMEOUT_MS = 5 * 60_000; // 5 minutes
 export const client = trpc.createClient({
 	links: [
 		// 2) Create a custom ending link
-		(runtime) => {
+		(runtime: any) => {
 			// initialize the different links for different targets
 			const servers = {
 				main: httpBatchLink({
@@ -18,7 +18,7 @@ export const client = trpc.createClient({
 					headers: getHeaders,
 					methodOverride: 'POST',
 					maxURLLength: 2083,
-					fetch: (url, opts) => {
+					fetch: (url: any, opts: any) => {
 						// Combine any incoming signal (e.g., from React Query) with your timeout
 						const timeoutSignal =
 							typeof AbortSignal.timeout === 'function'
@@ -37,15 +37,9 @@ export const client = trpc.createClient({
 						return fetch(url, { ...opts, signal });
 					},
 
-				})(runtime),
-				calendar: httpBatchLink({
-					url: `${import.meta.env.VITE_APP_CALENDAR_API_URL}`,
-					headers: getHeaders,
-					methodOverride: 'POST',
-					maxURLLength: 2083,
-				})(runtime),
+				})(runtime)
 			};
-			return (ctx) => {
+			return (ctx: any) => {
 				const { op } = ctx;
 				// split the path by `.` as the first part will signify the server target name
 				const pathParts = op.path.split(".");

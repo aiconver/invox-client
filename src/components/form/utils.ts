@@ -1,5 +1,4 @@
-import type { DynField, DynFieldType } from "./types";
-
+import { DynField, DynFieldType } from "@/types/form";
 
 export function defaultForType(t: DynFieldType) {
     switch (t) {
@@ -9,7 +8,6 @@ export function defaultForType(t: DynFieldType) {
             return "";
     }
 }
-
 
 export function mergeValues(
     fields: DynField[],
@@ -24,7 +22,6 @@ export function mergeValues(
     }
     return out;
 }
-
 
 export function computeMissingRequired(fields: DynField[], values: Record<string, any>) {
     const missing: string[] = [];

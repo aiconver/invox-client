@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { idToReadableText } from "@/lib/id-parsing";
+// import { idToReadableText } from "@/lib/id-parsing";
 import { cn } from "@/lib/utils";
 import { CheckCircleIcon } from "lucide-react";
 import { AnimatedPyramidIcon } from "../icons/loading-pyramid";
@@ -57,7 +57,7 @@ export function ToolInvocationName({
 				<CheckCircleIcon className="size-4 text-muted-foreground" />
 			)}
 			<span className="font-medium">
-				{idToReadableText(name, { capitalize })}
+				{/* {idToReadableText(name, { capitalize })} */}
 			</span>
 		</span>
 	);
