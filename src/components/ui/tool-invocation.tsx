@@ -35,8 +35,6 @@ export function ToolInvocationContent({
 }
 
 export function ToolInvocationName({
-	name,
-	capitalize = true,
 	type,
 	className,
 }: {

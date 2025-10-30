@@ -1,9 +1,3 @@
-
-
-
-import * as React from "react";
-
-
 export default function LoadingPanel({ label }: { label: string }) {
     return (
         <div className="flex-1 min-h-0">

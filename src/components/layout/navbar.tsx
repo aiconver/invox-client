@@ -1,6 +1,4 @@
-import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AppTopbar } from "./app-sidebar";
 
 export function Navbar() {

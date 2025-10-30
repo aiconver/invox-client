@@ -152,8 +152,8 @@ Beispiel:
 
   // parent state
   const [patch, setPatch] = React.useState<Record<string, any> | null>(null);
-  const [missingFields, setMissingFields] = React.useState<string[]>([]);
-  const [isFilling, setIsFilling] = React.useState(false);
+  const [_missingFields, setMissingFields] = React.useState<string[]>([]);
+  const [_isFilling, setIsFilling] = React.useState(false);
 
   // keep current user-entered values in parent (for iterative fills)
   const [currentValues, setCurrentValues] = React.useState<Record<string, any>>({});

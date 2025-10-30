@@ -1,4 +1,3 @@
-import { Trans } from "react-i18next";
 import { useEffect, useState } from "react";
 import { hasAuthParams } from "react-oidc-context";
 import { Outlet } from "react-router-dom";

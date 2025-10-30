@@ -2,15 +2,11 @@ import {
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { APP_ROUTES } from "@/lib/routes";
-import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
 export function DynamicBreadcrumb() {
-	const { t } = useTranslation();
 	const location = useLocation();
 
 

@@ -1,4 +1,3 @@
-import { Trans } from "react-i18next";
 // src/auth/oidcConfig.ts
 import { UserManager, WebStorageStateStore } from "oidc-client-ts";
 import config from "@/config/combined-config";

@@ -1,4 +1,3 @@
-import { Trans } from "react-i18next";
 import { MessageCircleWarningIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "../ui/card";
