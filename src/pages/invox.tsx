@@ -192,30 +192,25 @@ Beispiel:
         fields: FIELDS,
         currentValues: current,
         lang: selectedLang,
-        options: {
-          mode: "incremental",
-          preserveUserEdits: false,
-          fillOnlyEmpty: true,
-          returnEvidence: true,
-        },
+        approach: "singleLlmAllField",
       });
 
       // Extract values and metadata from the response
-    const newValues: Record<string, any> = {};
-    const newMetadata: Record<string, any> = {};
+      const newValues: Record<string, any> = {};
+      const newMetadata: Record<string, any> = {};
 
-       Object.entries(data.filled).forEach(([fieldId, fieldData]: [string, any]) => {
-      newValues[fieldId] = fieldData.value;
-      
-      // Build metadata object for each field
-      newMetadata[fieldId] = {
-        confidence: fieldData.confidence,
-        source: fieldData.source,
-        changed: fieldData.changed,
-        evidence: fieldData.evidence,
-        reason: fieldData.reason,
-      };
-    });
+      Object.entries(data.filled).forEach(([fieldId, fieldData]: [string, any]) => {
+        newValues[fieldId] = fieldData.value;
+
+        // Build metadata object for each field
+        newMetadata[fieldId] = {
+          confidence: fieldData.confidence,
+          source: fieldData.source,
+          changed: fieldData.changed,
+          evidence: fieldData.evidence,
+          reason: fieldData.reason,
+        };
+      });
       const nextPatch = filledToPatch(data.filled);
       setPatch(nextPatch);
 

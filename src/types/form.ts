@@ -48,13 +48,7 @@ export type FillTemplateInput = {
     string,
     { value: string | number | null; source?: "user" | "ai"; locked?: boolean }
   >;
-  options?: {
-    mode?: "incremental" | "fresh";
-    preserveUserEdits?: boolean;
-    fillOnlyEmpty?: boolean;
-    returnEvidence?: boolean;
-  };
-  approach?: "perField" | "fullContext";
+  approach?: "singleLlmAllField";
 };
 
 export type FillTemplateResult = {
